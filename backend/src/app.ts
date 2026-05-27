@@ -4,6 +4,7 @@ import cors from 'cors';
 import errorHandler from './middlewares/error.middleware';
 import loggerMiddleware from './middlewares/logger.middleware';
 import config from './config';
+import { authRoutes } from './domains';
 
 export const startApp = () => {
   const app = express();
@@ -21,7 +22,8 @@ export const startApp = () => {
   app.use(loggerMiddleware);
 
   // Routes
-   app.use('/status', (req, res) => {
+  app.use('/api/auth', authRoutes);
+  app.use('/status', (req, res) => {
     res.status(200).json({ running: true });
   });
 

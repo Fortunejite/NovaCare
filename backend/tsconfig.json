@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "module": "node20",
-    "moduleResolution": "node16",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "outDir": "./dist",
@@ -17,14 +17,19 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "@app/shared": ["../shared/src/index.ts", "../shared/dist/index.js"],
+      "@app/shared/*": ["../shared/src/*", "../shared/dist/*"]
     }
   },
+  "references": [
+    { "path": "../shared" }
+  ],
   "include": [
-    "**/*.ts",
+    "**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "prisma.config.ts",
+    "prisma.config.ts"
   ]
 }

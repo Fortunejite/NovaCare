@@ -98,7 +98,7 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
     error: string;
   };
   return res.status(error.status || 500).json(
-    { error: error.message || 'InternalServerError', message: error.message || 'Something went wrong' },
+    { error: error.error || 'InternalServerError', message: error.message || 'Something went wrong' },
   );
 };
 export default errorHandler;
