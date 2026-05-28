@@ -18,6 +18,11 @@ routes.get('/doctors', AdminController.getAllDoctors);
 routes.get('/doctors/:id', AdminController.getDoctorById);
 routes.put('/doctors/:id', AdminController.updateDoctor);
 
+routes.post('/receptionists', AdminController.createReceptionist);
+routes.get('/receptionists', AdminController.getAllReceptionists);
+routes.get('/receptionists/:id', AdminController.getReceptionistById);
+routes.put('/receptionists/:id', AdminController.updateReceptionist);
+
 routes.get('/staff', AdminController.getAllStaff);
 
 export default routes;
