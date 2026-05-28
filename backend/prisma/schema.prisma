@@ -15,7 +15,6 @@ enum Role {
   admin
   patient
   doctor
-  nurse
   receptionist
   pharmacist
   labTechnician
@@ -24,6 +23,13 @@ enum Role {
 enum AuthProvider {
   LOCAL
   GOOGLE
+}
+
+enum PatientStatus {
+  active
+  admitted
+  discharged
+  deceased
 }
 
 model AuthMethod {
@@ -49,8 +55,12 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  authMethods AuthMethod[]
-  doctor      Doctor?
+  authMethods   AuthMethod[]
+  doctor        Doctor?
+  receptionist  Receptionist?
+  pharmacist    Pharmacist?
+  labTechnician LabTechnician?
+  patient       Patient?
 
   @@map("users")
 }
@@ -68,16 +78,109 @@ model Department {
 }
 
 model Doctor {
-  id           String   @id @default(uuid())
-  firstName    String
-  lastName     String
-  userId       String   @unique
-  departmentId String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String   @id @default(uuid())
+  firstName         String
+  lastName          String
+  phoneNumber       String
+  address           String
+  consultationFee   Float
+  yearsOfExperience Int
+  licenseNumber     String
+  userId            String   @unique
+  departmentId      String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   user       User       @relation(fields: [userId], references: [id])
-  department Department @relation(fields: [departmentId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
 
   @@map("doctors")
+}
+
+model Receptionist {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  gender      String
+  dateOfBirth DateTime
+  phoneNumber String
+  address     String
+  userId      String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("receptionists")
+}
+
+model Pharmacist {
+  id            String   @id @default(uuid())
+  firstName     String
+  lastName      String
+  gender        String
+  phoneNumber   String
+  address       String
+  qualification String
+  licenseNumber String
+  userId        String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("pharmacists")
+}
+
+model LabTechnician {
+  id            String   @id @default(uuid())
+  firstName     String
+  lastName      String
+  gender        String
+  phoneNumber   String
+  address       String
+  qualification String
+  userId        String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("lab_technicians")
+}
+
+model Patient {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  gender      String
+  dateOfBirth DateTime
+  bloodGroup  String
+  genotype    String
+
+  phoneNumber String
+  address     String
+  city        String
+  state       String
+
+  materialStatus String
+
+  weight Float
+  height Float
+
+  emergencyContactName         String
+  emergencyContactPhone        String
+  emergencyContactRelationship String
+
+  allergies      String
+  medicalHistory String
+  status         PatientStatus @default(active)
+
+  registrationDate DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("patients")
 }
