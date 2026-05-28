@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod';
 
 export const loginUserSchema = z.object({
   email: z.email('Invalid email format'),

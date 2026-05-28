@@ -79,6 +79,10 @@ class AuthController {
         throw new BadRequestError('Invalid email or password');
       }
 
+      if (user.status !== 'active') {
+        throw new BadRequestError('Account is blocked. Please contact an administrator')
+      }
+
       const localAuthMethod = user.authMethods.find(
         (method) => method.provider === AuthProvider.LOCAL,
       );
@@ -140,6 +144,10 @@ class AuthController {
       });
       if (!existingUser || existingUser.refreshToken !== refreshToken) {
         throw new UnAuthorizedError('Invalid or expired session, please log in again');
+      }
+
+      if (existingUser.status !== 'active') {
+        throw new BadRequestError('Account is blocked. Please contact an administrator')
       }
 
       const { refreshToken: _, ...userData } = existingUser;

@@ -1,0 +1,116 @@
+import { Request, Response, NextFunction } from "express";
+import DepartmentController from "./department.controller";
+import AuthController from "./auth.controller";
+import DoctorController from "./doctor.controller";
+import StaffController from "./staff.controller";
+
+class AdminController {
+  static async createDepartment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const department = await DepartmentController.createDepartment(req.body);
+      res.status(201).json(department);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getAllDepartments(req: Request, res: Response, next: NextFunction) {
+    try {
+      const departments = await DepartmentController.getAllDepartments();
+      res.status(200).json(departments);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getDepartmentById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const department = await DepartmentController.getDepartmentById(req.params.id as string);
+      res.status(200).json(department);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateDepartment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const department = await DepartmentController.updateDepartment(req.params.id as string, req.body);
+      res.status(200).json(department);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async deleteDepartment(req: Request, res: Response, next: NextFunction) {
+    try {
+      await DepartmentController.deleteDepartment(req.params.id as string);
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getAllStaff(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query;
+      const page = Number(query.page) || 1;
+      const limit = Number(query.limit) || 10;
+
+      const staffs = await StaffController.getAllStaff(page, limit);
+      res.status(200).json(staffs);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async disableUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      await AuthController.blockUser(req.body.email);
+      res.status(200).json({ message: 'User disabled successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async createDoctor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const doctor = await DoctorController.createDoctor(req.body);
+      res.status(201).json(doctor);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getAllDoctors(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query;
+      const page = Number(query.page) || 1;
+      const limit = Number(query.limit) || 10;
+
+      const doctors = await DoctorController.getAllDoctors(page, limit);
+      res.status(200).json(doctors);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getDoctorById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const doctor = await DoctorController.getDoctorById(req.params.id as string);
+      res.status(200).json(doctor);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateDoctor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const doctor = await DoctorController.updateDoctor(req.params.id as string, req.body);
+      res.status(200).json(doctor);
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+export default AdminController;
