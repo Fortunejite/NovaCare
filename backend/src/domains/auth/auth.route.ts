@@ -7,6 +7,6 @@ const routes = Router();
 routes.post("/login", AuthController.localLogin);
 routes.post("/logout", Authorize(), AuthController.logout);
 routes.get("/me", Authorize(), AuthController.getMe);
-routes.post("/refresh", Authorize(), AuthController.refreshToken);
+routes.post("/refresh", AuthController.refreshToken);
 
 export default routes;
