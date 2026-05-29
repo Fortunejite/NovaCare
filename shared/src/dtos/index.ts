@@ -5,3 +5,4 @@ export * from './staff';
 export * from './response';
 export * from './receptionist';
 export * from './pharmacist';
+export * from './labTechnician';

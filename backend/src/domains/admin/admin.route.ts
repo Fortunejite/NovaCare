@@ -28,6 +28,11 @@ routes.get('/pharmacists', AdminController.getAllPharmacists);
 routes.get('/pharmacists/:id', AdminController.getPharmacistById);
 routes.put('/pharmacists/:id', AdminController.updatePharmacist);
 
+routes.post('/lab-technicians', AdminController.createLabTechnician);
+routes.get('/lab-technicians', AdminController.getAllLabTechnicians);
+routes.get('/lab-technicians/:id', AdminController.getLabTechnicianById);
+routes.put('/lab-technicians/:id', AdminController.updateLabTechnician);
+
 routes.get('/staff', AdminController.getAllStaff);
 
 export default routes;

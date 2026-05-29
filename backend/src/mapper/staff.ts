@@ -6,6 +6,7 @@ type UserWithProfiles = Prisma.UserGetPayload<{
     doctor: true;
     pharmacist: true;
     receptionist: true;
+    labTechnician: true;
   }
 }>
 
@@ -17,6 +18,8 @@ const getProfile = (staff: UserWithProfiles) => {
       return staff.pharmacist;
     case 'receptionist':
       return staff.receptionist;
+    case 'labTechnician':
+      return staff.labTechnician;
     default:
       return null;
   }
