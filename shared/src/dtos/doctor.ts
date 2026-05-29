@@ -7,6 +7,11 @@ export interface DoctorDto {
   departmentName: string;
   departmentDescription: string | null;
   departmentId: string;
+  phoneNumber: string;
+  address: string;
+  consultationFee: number;
+  yearsOfExperience: number;
+  licenseNumber: string;
   email: string;
   userId: string;
 }

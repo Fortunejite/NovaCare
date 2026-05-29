@@ -15,6 +15,11 @@ export const doctorMapper = (doctor: DoctorWithDetails): DoctorDto => ({
   departmentName: doctor.department.name,
   departmentDescription: doctor.department.description,
   departmentId: doctor.department.id,
+  phoneNumber: doctor.phoneNumber,
+  address: doctor.address,
+  consultationFee: doctor.consultationFee,
+  yearsOfExperience: doctor.yearsOfExperience,
+  licenseNumber: doctor.licenseNumber,
   email: doctor.user.email,
   userId: doctor.user.id,
 })
