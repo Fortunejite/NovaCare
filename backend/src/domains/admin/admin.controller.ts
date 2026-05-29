@@ -4,6 +4,7 @@ import AuthController from "./auth.controller";
 import DoctorController from "./doctor.controller";
 import StaffController from "./staff.controller";
 import ReceptionistController from "./receptionist.controller";
+import PharmacistController from "./pharmacist.controller";
 
 class AdminController {
   static async createDepartment(req: Request, res: Response, next: NextFunction) {
@@ -150,6 +151,47 @@ class AdminController {
     try {
       const receptionist = await ReceptionistController.updateReceptionist(req.params.id as string, req.body);
       res.status(200).json(receptionist);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
+  static async createPharmacist(req: Request, res: Response, next: NextFunction) {
+    try {
+      const pharmacist = await PharmacistController.createPharmacist(req.body);
+      res.status(201).json(pharmacist);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getAllPharmacists(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query;
+      const page = Number(query.page) || 1;
+      const limit = Number(query.limit) || 10;
+
+      const pharmacists = await PharmacistController.getAllPharmacists(page, limit);
+      res.status(200).json(pharmacists);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getPharmacistById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const pharmacist = await PharmacistController.getPharmacistById(req.params.id as string);
+      res.status(200).json(pharmacist);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updatePharmacist(req: Request, res: Response, next: NextFunction) {
+    try {
+      const pharmacist = await PharmacistController.updatePharmacist(req.params.id as string, req.body);
+      res.status(200).json(pharmacist);
     } catch (error) {
       next(error);
     }

@@ -23,6 +23,11 @@ routes.get('/receptionists', AdminController.getAllReceptionists);
 routes.get('/receptionists/:id', AdminController.getReceptionistById);
 routes.put('/receptionists/:id', AdminController.updateReceptionist);
 
+routes.post('/pharmacists', AdminController.createPharmacist);
+routes.get('/pharmacists', AdminController.getAllPharmacists);
+routes.get('/pharmacists/:id', AdminController.getPharmacistById);
+routes.put('/pharmacists/:id', AdminController.updatePharmacist);
+
 routes.get('/staff', AdminController.getAllStaff);
 
 export default routes;

@@ -4,6 +4,8 @@ import { Prisma } from "@prisma/client";
 type UserWithProfiles = Prisma.UserGetPayload<{
   include: {
     doctor: true;
+    pharmacist: true;
+    receptionist: true;
   }
 }>
 
@@ -11,6 +13,10 @@ const getProfile = (staff: UserWithProfiles) => {
   switch (staff.role) {
     case 'doctor':
       return staff.doctor;
+    case 'pharmacist':
+      return staff.pharmacist;
+    case 'receptionist':
+      return staff.receptionist;
     default:
       return null;
   }

@@ -7,7 +7,7 @@ class StaffController {
     const [staff, total] = await Promise.all([
       prisma.user.findMany({
         where: { role: { notIn: ['admin', 'patient'] } },
-        include: { doctor: true },
+        include: { doctor: true, pharmacist: true, receptionist: true },
         skip: (page - 1) * limit,
         take: limit,
       }),
