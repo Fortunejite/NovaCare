@@ -8,5 +8,7 @@ routes.post("/login", AuthController.localLogin);
 routes.post("/logout", Authorize(), AuthController.logout);
 routes.get("/me", Authorize(), AuthController.getMe);
 routes.post("/refresh", AuthController.refreshToken);
+routes.post("/forgot-password", AuthController.forgotPassword);
+routes.post("/reset-password", AuthController.resetPassword);
 
 export default routes;

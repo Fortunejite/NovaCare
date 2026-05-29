@@ -2,10 +2,17 @@ import bcrypt from 'bcrypt';
 import { AuthProvider } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { BadRequestError, UnAuthorizedError } from '@/lib/errors';
-import { loginUserSchema, UserDto } from '@app/shared';
+import {
+  forgotPasswordSchema,
+  loginUserSchema,
+  resetPasswordSchema,
+  UserDto,
+} from '@app/shared';
 import { userMapper } from '@/mapper/user';
 import { NextFunction, Response, Request } from 'express';
 import { tokenController } from './token.controller';
+import { v4 as uuidv4 } from 'uuid';
+import { sendPasswordResetEmail } from '@/services/resend/password';
 
 class AuthController {
   private static getCookieOptions() {
@@ -80,7 +87,9 @@ class AuthController {
       }
 
       if (user.status !== 'active') {
-        throw new BadRequestError('Account is blocked. Please contact an administrator')
+        throw new BadRequestError(
+          'Account is blocked. Please contact an administrator',
+        );
       }
 
       const localAuthMethod = user.authMethods.find(
@@ -136,18 +145,24 @@ class AuthController {
 
       const payload = tokenController.verifyRefreshToken(refreshToken);
       if (!payload) {
-        throw new UnAuthorizedError('Invalid or expired session, please log in again');
+        throw new UnAuthorizedError(
+          'Invalid or expired session, please log in again',
+        );
       }
 
       const existingUser = await prisma.user.findUnique({
         where: { id: payload.userId },
       });
       if (!existingUser || existingUser.refreshToken !== refreshToken) {
-        throw new UnAuthorizedError('Invalid or expired session, please log in again');
+        throw new UnAuthorizedError(
+          'Invalid or expired session, please log in again',
+        );
       }
 
       if (existingUser.status !== 'active') {
-        throw new BadRequestError('Account is blocked. Please contact an administrator')
+        throw new BadRequestError(
+          'Account is blocked. Please contact an administrator',
+        );
       }
 
       const { refreshToken: _, ...userData } = existingUser;
@@ -171,6 +186,92 @@ class AuthController {
       res.status(204).send();
     } catch (error) {
       next(error);
+    }
+  }
+
+  static async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = forgotPasswordSchema.parse(req.body);
+
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (!user) {
+        res.status(200).json({
+          message:
+            'If an account with that email exists, a password reset link has been sent',
+        });
+        return;
+      }
+
+      const resetToken = uuidv4();
+      await prisma.passwordResetToken.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      await prisma.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          token: resetToken,
+          expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
+        },
+      });
+
+      await sendPasswordResetEmail(email, resetToken);
+      res
+        .status(200)
+        .json({
+          message:
+            'If an account with that email exists, a password reset link has been sent',
+        });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token, newPassword } = resetPasswordSchema.parse(req.body);
+
+      const resetTokenRecord = await prisma.passwordResetToken.findUnique({
+        where: { token },
+        include: { user: { include: { authMethods: true } } },
+      });
+
+      if (!resetTokenRecord || resetTokenRecord.expiresAt < new Date()) {
+        throw new BadRequestError('Invalid or expired password reset token');
+      }
+
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+      const localAuthMethod = resetTokenRecord.user.authMethods.find(
+        (method) => method.provider === AuthProvider.LOCAL,
+      );
+
+      if (!localAuthMethod) {
+        await prisma.authMethod.create({
+          data: {
+            provider: AuthProvider.LOCAL,
+            passwordHash: newPasswordHash,
+            user: { connect: { id: resetTokenRecord.userId } },
+          },
+        });
+      } else {
+        await prisma.authMethod.update({
+          where: { id: localAuthMethod.id },
+          data: { passwordHash: newPasswordHash },
+        });
+      }
+
+      await prisma.passwordResetToken.deleteMany({
+        where: {
+          userId: resetTokenRecord.userId,
+        },
+      });
+
+      res.status(200).json({ message: 'Password reset successful' });
+    } catch (err) {
+      next(err);
     }
   }
 }

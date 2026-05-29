@@ -55,15 +55,29 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  authMethods   AuthMethod[]
-  doctor        Doctor?
-  receptionist  Receptionist?
-  pharmacist    Pharmacist?
-  labTechnician LabTechnician?
-  patient       Patient?
+  authMethods         AuthMethod[]
+  doctor              Doctor?
+  receptionist        Receptionist?
+  pharmacist          Pharmacist?
+  labTechnician       LabTechnician?
+  patient             Patient?
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("password_reset_tokens")
+}
+
 
 model Department {
   id          String   @id @default(uuid())
