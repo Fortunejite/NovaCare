@@ -163,7 +163,7 @@ model Patient {
   city        String
   state       String
 
-  materialStatus String
+  maritalStatus String
 
   weight Float
   height Float
@@ -172,8 +172,8 @@ model Patient {
   emergencyContactPhone        String
   emergencyContactRelationship String
 
-  allergies      String
-  medicalHistory String
+  allergies      String?
+  medicalHistory String?
   status         PatientStatus @default(active)
 
   registrationDate DateTime @default(now())

@@ -4,7 +4,7 @@ import cors from 'cors';
 import errorHandler from './middlewares/error.middleware';
 import loggerMiddleware from './middlewares/logger.middleware';
 import config from './config';
-import { adminRoutes, authRoutes } from './domains';
+import { adminRoutes, authRoutes, receptionistRoutes } from './domains';
 
 export const startApp = () => {
   const app = express();
@@ -24,6 +24,7 @@ export const startApp = () => {
   // Routes
   app.use('/api/auth', authRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/receptionist', receptionistRoutes);
 
   app.use('/status', (req, res) => {
     res.status(200).json({ running: true });
