@@ -2,16 +2,29 @@ import { prisma } from '@/lib/prisma';
 import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
 import { pageResponseMapper } from '@/mapper/pagedResponse';
-import { CreatePharmacistDto, createPharmacistSchema, PharmacistDto, PharmacistsResponse, UpdatePharmacistDto, updatePharmacistSchema } from '@app/shared';
+import {
+  CreatePharmacistDto,
+  createPharmacistSchema,
+  PharmacistDto,
+  PharmacistsResponse,
+  UpdatePharmacistDto,
+  updatePharmacistSchema,
+} from '@app/shared';
 import { pharmacistMapper } from '@/mapper/pharmacist';
 
 class PharmacistController {
   private static include = { user: true };
 
-  static async createPharmacist(payload: CreatePharmacistDto): Promise<PharmacistDto> {
+  static async createPharmacist(
+    payload: CreatePharmacistDto,
+  ): Promise<PharmacistDto> {
     const { email, ...data } = createPharmacistSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(email, 'pharmacist');
+    const newUser = await AuthController.createNewUser(
+      email,
+      `${data.firstName} ${data.lastName}`,
+      'pharmacist',
+    );
 
     const pharmacistProfile = await prisma.pharmacist.create({
       data: { ...data, userId: newUser.id },
@@ -21,7 +34,10 @@ class PharmacistController {
     return pharmacistMapper(pharmacistProfile);
   }
 
-  static async getAllPharmacists(page = 1, limit = 10): Promise<PharmacistsResponse> {
+  static async getAllPharmacists(
+    page = 1,
+    limit = 10,
+  ): Promise<PharmacistsResponse> {
     const [pharmacists, total] = await Promise.all([
       prisma.pharmacist.findMany({
         skip: (page - 1) * limit,
@@ -36,7 +52,7 @@ class PharmacistController {
       page,
       limit,
       total,
-    })
+    });
 
     return data;
   }
@@ -54,7 +70,10 @@ class PharmacistController {
     return pharmacistMapper(pharmacist);
   }
 
-  static async updatePharmacist(id: string, payload: UpdatePharmacistDto): Promise<PharmacistDto> {
+  static async updatePharmacist(
+    id: string,
+    payload: UpdatePharmacistDto,
+  ): Promise<PharmacistDto> {
     const { email, ...data } = updatePharmacistSchema.parse(payload);
     const pharmacist = await prisma.pharmacist.findUnique({
       where: { id },

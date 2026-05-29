@@ -3,15 +3,28 @@ import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
 import { pageResponseMapper } from '@/mapper/pagedResponse';
 import { labTechnicianMapper } from '@/mapper/labTechnician';
-import { CreateLabTechnicianDto, LabTechnicianDto, createLabTechnicianSchema, LabTechniciansResponse, UpdateLabTechnicianDto, updateLabTechnicianSchema } from '@app/shared';
+import {
+  CreateLabTechnicianDto,
+  LabTechnicianDto,
+  createLabTechnicianSchema,
+  LabTechniciansResponse,
+  UpdateLabTechnicianDto,
+  updateLabTechnicianSchema,
+} from '@app/shared';
 
 class LabTechnicianController {
   private static include = { user: true };
 
-  static async createLabTechnician(payload: CreateLabTechnicianDto): Promise<LabTechnicianDto> {
+  static async createLabTechnician(
+    payload: CreateLabTechnicianDto,
+  ): Promise<LabTechnicianDto> {
     const { email, ...data } = createLabTechnicianSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(email, 'labTechnician');
+    const newUser = await AuthController.createNewUser(
+      email,
+      `${data.firstName} ${data.lastName}`,
+      'labTechnician',
+    );
 
     const labTechnicianProfile = await prisma.labTechnician.create({
       data: { ...data, userId: newUser.id },
@@ -21,7 +34,10 @@ class LabTechnicianController {
     return labTechnicianMapper(labTechnicianProfile);
   }
 
-  static async getAllLabTechnicians(page = 1, limit = 10): Promise<LabTechniciansResponse> {
+  static async getAllLabTechnicians(
+    page = 1,
+    limit = 10,
+  ): Promise<LabTechniciansResponse> {
     const [labTechnicians, total] = await Promise.all([
       prisma.labTechnician.findMany({
         skip: (page - 1) * limit,
@@ -36,7 +52,7 @@ class LabTechnicianController {
       page,
       limit,
       total,
-    })
+    });
 
     return data;
   }
@@ -54,7 +70,10 @@ class LabTechnicianController {
     return labTechnicianMapper(labTechnician);
   }
 
-  static async updateLabTechnician(id: string, payload: UpdateLabTechnicianDto): Promise<LabTechnicianDto> {
+  static async updateLabTechnician(
+    id: string,
+    payload: UpdateLabTechnicianDto,
+  ): Promise<LabTechnicianDto> {
     const { email, ...data } = updateLabTechnicianSchema.parse(payload);
     const labTechnician = await prisma.labTechnician.findUnique({
       where: { id },

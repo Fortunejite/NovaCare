@@ -3,9 +3,14 @@ import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/prisma';
 import { AuthProvider, Role, User } from '@prisma/client';
 import { z } from 'zod';
+import { sendStaffAccountCreationEmail } from '@/services/resend/accounts';
 
 class AuthController {
-  static async createNewUser(email: string, role: Role): Promise<User> {
+  static async createNewUser(
+    email: string,
+    name: string,
+    role: Role,
+  ): Promise<User> {
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -19,6 +24,19 @@ class AuthController {
     // Generate default password alpha-numeric string of length 8
     const defaultPassword = crypto.randomUUID().slice(0, 8);
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+    try {
+      await sendStaffAccountCreationEmail({
+        email: newUser.email,
+        name,
+        role: newUser.role,
+        password: defaultPassword,
+      });
+    } catch (e) {
+      await prisma.user.delete({ where: { id: newUser.id } });
+      throw e;
+    }
+
     await prisma.authMethod.create({
       data: {
         provider: AuthProvider.LOCAL,

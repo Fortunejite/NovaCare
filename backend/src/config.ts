@@ -14,6 +14,8 @@ const config = {
   jwtSecret: process.env.JWT_SECRET!,
   refreshToken: process.env.REFRESH_TOKEN!,
   databaseUrl: process.env.DATABASE_URL!,
+  resendApiKey: process.env.RESEND_API_KEY!,
+  domain: process.env.DOMAIN!,
   isValid: false,
 };
 
@@ -38,6 +40,16 @@ const validateConfig = () => {
       name: 'Database URL',
       key: 'databaseUrl',
       value: config.databaseUrl,
+    },
+    {
+      name: 'Resend API Key',
+      key: 'resendApiKey',
+      value: config.resendApiKey,
+    },
+    {
+      name: 'Domain',
+      key: 'domain',
+      value: config.domain,
     },
   ];
 

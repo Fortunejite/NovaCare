@@ -1,6 +1,13 @@
 import { prisma } from '@/lib/prisma';
 import { receptionistMapper } from '@/mapper/receptionist';
-import { CreateReceptionistDto, UpdateReceptionistDto, ReceptionistDto, ReceptionistsResponse, createReceptionistSchema, updateReceptionistSchema } from '@app/shared';
+import {
+  CreateReceptionistDto,
+  UpdateReceptionistDto,
+  ReceptionistDto,
+  ReceptionistsResponse,
+  createReceptionistSchema,
+  updateReceptionistSchema,
+} from '@app/shared';
 import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
 import { pageResponseMapper } from '@/mapper/pagedResponse';
@@ -8,10 +15,16 @@ import { pageResponseMapper } from '@/mapper/pagedResponse';
 class ReceptionistController {
   private static include = { user: true };
 
-  static async createReceptionist(payload: CreateReceptionistDto): Promise<ReceptionistDto> {
+  static async createReceptionist(
+    payload: CreateReceptionistDto,
+  ): Promise<ReceptionistDto> {
     const { email, ...data } = createReceptionistSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(email, 'receptionist');
+    const newUser = await AuthController.createNewUser(
+      email,
+      `${data.firstName} ${data.lastName}`,
+      'receptionist',
+    );
 
     const receptionistProfile = await prisma.receptionist.create({
       data: { ...data, userId: newUser.id },
@@ -21,7 +34,10 @@ class ReceptionistController {
     return receptionistMapper(receptionistProfile);
   }
 
-  static async getAllReceptionists(page = 1, limit = 10): Promise<ReceptionistsResponse> {
+  static async getAllReceptionists(
+    page = 1,
+    limit = 10,
+  ): Promise<ReceptionistsResponse> {
     const [receptionists, total] = await Promise.all([
       prisma.receptionist.findMany({
         skip: (page - 1) * limit,
@@ -36,7 +52,7 @@ class ReceptionistController {
       page,
       limit,
       total,
-    })
+    });
 
     return data;
   }
@@ -54,7 +70,10 @@ class ReceptionistController {
     return receptionistMapper(receptionist);
   }
 
-  static async updateReceptionist(id: string, payload: UpdateReceptionistDto): Promise<ReceptionistDto> {
+  static async updateReceptionist(
+    id: string,
+    payload: UpdateReceptionistDto,
+  ): Promise<ReceptionistDto> {
     const { email, ...data } = updateReceptionistSchema.parse(payload);
     const receptionist = await prisma.receptionist.findUnique({
       where: { id },

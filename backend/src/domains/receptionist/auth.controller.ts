@@ -3,9 +3,13 @@ import bcrypt from 'bcrypt';
 import { prisma } from '@/lib/prisma';
 import { AuthProvider, User } from '@prisma/client';
 import { z } from 'zod';
+import { sendPatientAccountCreationEmail } from '@/services/resend/accounts';
 
 class AuthController {
-  static async createNewPatientUser(email: string): Promise<User> {
+  static async createNewPatientUser(
+    email: string,
+    name: string,
+  ): Promise<User> {
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -14,11 +18,25 @@ class AuthController {
       throw new BadRequestError('User with this email already exists');
     }
 
-    const newUser = await prisma.user.create({ data: { email, role: 'patient' } });
-
+    const newUser = await prisma.user.create({
+      data: { email, role: 'patient' },
+    });
     // Generate default password alpha-numeric string of length 8
     const defaultPassword = crypto.randomUUID().slice(0, 8);
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+    try {
+      await sendPatientAccountCreationEmail({
+        email: newUser.email,
+        name,
+        role: newUser.role,
+        password: defaultPassword,
+      });
+    } catch (e) {
+      await prisma.user.delete({ where: { id: newUser.id } });
+      throw e;
+    }
+
     await prisma.authMethod.create({
       data: {
         provider: AuthProvider.LOCAL,

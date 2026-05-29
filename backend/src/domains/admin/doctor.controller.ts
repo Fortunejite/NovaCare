@@ -1,5 +1,12 @@
 import { prisma } from '@/lib/prisma';
-import { CreateDoctorDto, createDoctorSchema, DoctorDto, DoctorsResponse, UpdateDoctorDto, updateDoctorSchema } from '@app/shared';
+import {
+  CreateDoctorDto,
+  createDoctorSchema,
+  DoctorDto,
+  DoctorsResponse,
+  UpdateDoctorDto,
+  updateDoctorSchema,
+} from '@app/shared';
 import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
 import { doctorMapper } from '@/mapper/doctor';
@@ -11,7 +18,11 @@ class DoctorController {
   static async createDoctor(payload: CreateDoctorDto): Promise<DoctorDto> {
     const { email, ...data } = createDoctorSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(email, 'doctor');
+    const newUser = await AuthController.createNewUser(
+      email,
+      `${data.firstName} ${data.lastName}`,
+      'doctor',
+    );
 
     const doctorProfile = await prisma.doctor.create({
       data: { ...data, userId: newUser.id },
@@ -36,7 +47,7 @@ class DoctorController {
       page,
       limit,
       total,
-    })
+    });
 
     return data;
   }
@@ -54,7 +65,10 @@ class DoctorController {
     return doctorMapper(doctor);
   }
 
-  static async updateDoctor(id: string, payload: UpdateDoctorDto): Promise<DoctorDto> {
+  static async updateDoctor(
+    id: string,
+    payload: UpdateDoctorDto,
+  ): Promise<DoctorDto> {
     const { email, ...data } = updateDoctorSchema.parse(payload);
     const doctor = await prisma.doctor.findUnique({
       where: { id },

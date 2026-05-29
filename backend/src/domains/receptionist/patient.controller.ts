@@ -3,7 +3,14 @@ import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
 import { pageResponseMapper } from '@/mapper/pagedResponse';
 import { patientMapper } from '@/mapper/patient';
-import { CreatePatientDto, PatientDto, createPatientSchema, PatientsResponse, UpdatePatientDto, updatePatientSchema } from '@app/shared';
+import {
+  CreatePatientDto,
+  PatientDto,
+  createPatientSchema,
+  PatientsResponse,
+  UpdatePatientDto,
+  updatePatientSchema,
+} from '@app/shared';
 
 class PatientController {
   private static include = { user: true };
@@ -11,7 +18,10 @@ class PatientController {
   static async createPatient(payload: CreatePatientDto): Promise<PatientDto> {
     const { email, ...data } = createPatientSchema.parse(payload);
 
-    const newUser = await AuthController.createNewPatientUser(email);
+    const newUser = await AuthController.createNewPatientUser(
+      email,
+      `${data.firstName} ${data.lastName}`,
+    );
 
     const patientProfile = await prisma.patient.create({
       data: { ...data, userId: newUser.id },
@@ -21,26 +31,34 @@ class PatientController {
     return patientMapper(patientProfile);
   }
 
-  static async getAllPatients(page = 1, limit = 10, search?: string): Promise<PatientsResponse> {
+  static async getAllPatients(
+    page = 1,
+    limit = 10,
+    search?: string,
+  ): Promise<PatientsResponse> {
     const [patients, total] = await Promise.all([
       prisma.patient.findMany({
         skip: (page - 1) * limit,
         take: limit,
         include: this.include,
-        where: search ? {
-          OR: [
-            { firstName: { contains: search } },
-            { lastName: { contains: search } },
-          ]
-        } : undefined
+        where: search
+          ? {
+              OR: [
+                { firstName: { contains: search } },
+                { lastName: { contains: search } },
+              ],
+            }
+          : undefined,
       }),
       prisma.patient.count({
-        where: search ? {
-          OR: [
-            { firstName: { contains: search } },
-            { lastName: { contains: search } },
-          ]
-        } : undefined
+        where: search
+          ? {
+              OR: [
+                { firstName: { contains: search } },
+                { lastName: { contains: search } },
+              ],
+            }
+          : undefined,
       }),
     ]);
 
@@ -49,7 +67,7 @@ class PatientController {
       page,
       limit,
       total,
-    })
+    });
 
     return data;
   }
@@ -67,7 +85,10 @@ class PatientController {
     return patientMapper(patient);
   }
 
-  static async updatePatient(id: string, payload: UpdatePatientDto): Promise<PatientDto> {
+  static async updatePatient(
+    id: string,
+    payload: UpdatePatientDto,
+  ): Promise<PatientDto> {
     const { email, ...data } = updatePatientSchema.parse(payload);
     const patient = await prisma.patient.findUnique({
       where: { id },
