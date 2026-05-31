@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { LoginUserDto } from "@app/shared";
 import api, { handleClientError } from "@/lib/api";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function LoginPage() {
+  const { fetchUser } = useAuthStore();
   const [loginData, setLoginData] = useState<LoginUserDto>({
     email: "",
     password: "",
@@ -41,6 +43,7 @@ export default function LoginPage() {
     
     try {
       const res = await api.post('/auth/login', loginData);
+      await fetchUser();
       console.log(res.data)
     } catch (error) {
       handleClientError(error, { setErrors })
