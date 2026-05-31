@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import '@/lib/axios-interceptor';
 import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 

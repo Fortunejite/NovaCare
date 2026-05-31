@@ -11,7 +11,7 @@ interface AuthStore {
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
-  status: "unauthenticated",
+  status: "loading",
   fetchUser: async () => {
     set({ status: "loading" });
     try {

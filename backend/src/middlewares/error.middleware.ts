@@ -25,8 +25,6 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
     );
   }
 
-  console.error(err.stack);
-
   // Prisma Known Request Error (P2xxx codes)
   if (err instanceof PrismaClientKnownRequestError) {
     switch (err.code) {
@@ -90,7 +88,6 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
     });
   }
   
-  console.error(err.stack);
   // Fallback
   const error = err as unknown as {
     status?: number;
