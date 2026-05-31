@@ -1,7 +1,8 @@
 'use client';
 
+import AdminNavbar from '@/components/admin-navbar';
 import { useAuthStore } from '@/store/auth.store';
-import { redirect, useParams } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 export default function RoleLayout({
   children,
@@ -18,5 +19,12 @@ export default function RoleLayout({
     redirect('/');
   }
   
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <AdminNavbar />
+      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {children}
+      </main>
+    </div>
+  );
 }
