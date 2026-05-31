@@ -34,5 +34,6 @@ routes.get('/lab-technicians/:id', AdminController.getLabTechnicianById);
 routes.put('/lab-technicians/:id', AdminController.updateLabTechnician);
 
 routes.get('/staff', AdminController.getAllStaff);
+routes.get('/staff/summary', AdminController.getStaffSummary);
 
 export default routes;

@@ -66,6 +66,15 @@ class AdminController {
     }
   }
 
+  static async getStaffSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const summary = await StaffController.getStaffSummary();
+      res.status(200).json(summary);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async disableUser(req: Request, res: Response, next: NextFunction) {
     try {
       await AuthController.blockUser(req.body.email);

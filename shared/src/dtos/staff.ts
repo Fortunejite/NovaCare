@@ -11,3 +11,5 @@ export interface StaffDto {
 }
 
 export type StaffResponse = PagedResponse<StaffDto>;
+
+export type StaffSummaryResponse = Record<Role, number>;
