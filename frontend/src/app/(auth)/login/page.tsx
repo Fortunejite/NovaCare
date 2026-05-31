@@ -3,9 +3,10 @@ import Link from "next/link";
 import { ArrowRight, Building2, Loader2, ShieldCheck, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { LoginUserDto } from "@app/shared";
+import { LoginUserDto, UserDto } from "@app/shared";
 import api, { handleClientError } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
+import { getUserDashboardPath } from "@/lib/role";
 
 export default function LoginPage() {
   const { fetchUser } = useAuthStore();
@@ -42,9 +43,11 @@ export default function LoginPage() {
     setIsSubmitting(true);
     
     try {
-      const res = await api.post('/auth/login', loginData);
+      const res = await api.post<UserDto>('/auth/login', loginData);
       await fetchUser();
-      console.log(res.data)
+      const user = res.data;
+
+      window.location.href = getUserDashboardPath(user.role);
     } catch (error) {
       handleClientError(error, { setErrors })
     } finally {
