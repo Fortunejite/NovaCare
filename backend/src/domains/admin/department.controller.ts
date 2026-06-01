@@ -11,6 +11,10 @@ import {
 } from '@app/shared';
 
 class DepartmentController {
+  private static include = {
+    _count: { select: { doctors: true } },
+  };
+
   static async createDepartment(
     payload: CreateDepartmentDto,
   ): Promise<DepartmentDto> {
@@ -28,19 +32,23 @@ class DepartmentController {
         name: data.name,
         description: data.description,
       },
+      include: this.include,
     });
 
     return departmentMapper(department);
   }
 
   static async getAllDepartments(): Promise<DepartmentsResponse> {
-    const departments = await prisma.department.findMany();
+    const departments = await prisma.department.findMany({
+      include: this.include,
+    });
     return departments.map(departmentMapper);
   }
 
   static async getDepartmentById(id: string): Promise<DepartmentDto> {
     const department = await prisma.department.findUnique({
       where: { id },
+      include: this.include,
     });
 
     if (!department) {
@@ -69,6 +77,7 @@ class DepartmentController {
         name: data.name,
         description: data.description,
       },
+      include: this.include,
     });
 
     return departmentMapper(department);

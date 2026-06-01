@@ -148,6 +148,9 @@ export default function AdminHomepage() {
                 <Users className="size-4" />
                 {staffResponse?.pagination.total ?? 0} staff members
               </div>
+              <Button type="button" size="sm" variant="outline" onClick={() => router.push('/admin/departments')}>
+                Manage departments
+              </Button>
               <Button type="button" size="sm" onClick={() => router.push('/admin/create-staff')}>
                 Create staff
               </Button>
