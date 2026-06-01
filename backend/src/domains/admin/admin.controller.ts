@@ -84,6 +84,15 @@ class AdminController {
     }
   }
 
+  static async enableUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      await AuthController.unblockUser(req.body.email);
+      res.status(200).json({ message: 'User enabled successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
 
   static async createDoctor(req: Request, res: Response, next: NextFunction) {
     try {

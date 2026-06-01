@@ -2,7 +2,7 @@
 
 import api, { handleClientError } from '@/lib/api';
 import { StaffDto, StaffResponse, StaffSummaryResponse } from '@app/shared';
-import { Ban, Eye, Loader2, Microscope, Pill, Stethoscope, ClipboardList, Users } from 'lucide-react';
+import { Ban, Eye, Loader2, Microscope, Pill, Stethoscope, ClipboardList, Users, UserCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -79,6 +79,19 @@ export default function AdminHomepage() {
     return () => window.clearTimeout(timeoutId);
   }, [page]);
 
+  const handleEnable = async (staff: StaffDto) => {
+    setIsDisabling(staff.id);
+
+    try {
+      await api.post('/admin/users/enable', { email: staff.email });
+      await loadData(page);
+    } catch (error) {
+      handleClientError(error);
+    } finally {
+      setIsDisabling(null);
+    }
+  };
+
   const handleDisable = async (staff: StaffDto) => {
     setIsDisabling(staff.id);
 
@@ -143,13 +156,14 @@ export default function AdminHomepage() {
                 <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:px-6">Staff</TableHead>
                 <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:px-6">Role</TableHead>
                 <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:px-6">Email</TableHead>
+                <TableHead className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:px-6">Status</TableHead>
                 <TableHead className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:px-6">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="px-4 py-10 sm:px-6">
+                  <TableCell colSpan={5} className="px-4 py-10 sm:px-6">
                     <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="size-4 animate-spin" />
                       Loading staff
@@ -177,6 +191,11 @@ export default function AdminHomepage() {
                       <p className="text-sm text-foreground">{staff.email}</p>
                     </TableCell>
                     <TableCell className="px-4 py-4 sm:px-6">
+                      <Badge variant={staff.status === 'active' ? "default" : "secondary"} className="capitalize">
+                        {staff.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 sm:px-6">
                       <div className="flex justify-end gap-2">
                         <Button
                           type="button"
@@ -189,24 +208,39 @@ export default function AdminHomepage() {
                         >
                           <Eye className="size-4" />
                         </Button>
-                        <Button
-                          type="button"
-                          onClick={() => handleDisable(staff)}
-                          disabled={isDisabling === staff.id}
-                          variant="destructive"
-                          size="icon-sm"
-                          className="rounded-full"
-                          aria-label={`Disable ${staff.email}`}
-                        >
-                          {isDisabling === staff.id ? <Loader2 className="size-4 animate-spin" /> : <Ban className="size-4" />}
-                        </Button>
+                        {
+                          staff.status === 'active' ? (
+                            <Button
+                              type="button"
+                              onClick={() => handleDisable(staff)}
+                              disabled={isDisabling === staff.id}
+                              variant="destructive"
+                              size="icon-sm"
+                              className="rounded-full"
+                              aria-label={`Disable ${staff.email}`}
+                            >
+                              {isDisabling === staff.id ? <Loader2 className="size-4 animate-spin" /> : <Ban className="size-4" />}
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              onClick={() => handleEnable(staff)}
+                              variant="secondary"
+                              size="icon-sm"
+                              className="rounded-full"
+                              aria-label={`Enable ${staff.email}`}
+                            >
+                              <UserCheck className="size-4" />
+                            </Button>
+                          )
+                        }
                       </div>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="px-4 py-10 text-center text-sm text-muted-foreground sm:px-6">
+                  <TableCell colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground sm:px-6">
                     No staff found.
                   </TableCell>
                 </TableRow>

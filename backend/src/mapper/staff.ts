@@ -31,6 +31,7 @@ export const staffMapper = (staff: UserWithProfiles): StaffDto => {
     id: staff.id,
     email: staff.email,
     role: staff.role,
+    status: staff.status,
     profileId: profile ? profile.id : null,
     firstName: profile ? profile.firstName : null,
     lastName: profile ? profile.lastName : null,

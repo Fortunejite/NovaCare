@@ -81,6 +81,22 @@ class AuthController {
       data: { status: 'blocked' },
     });
   }
+
+  static async unblockUser(email: string) {
+    z.email('Invalid email format').parse(email);
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestError('User not found');
+    }
+
+    await prisma.user.update({
+      where: { email },
+      data: { status: 'active' },
+    });
+  }
 }
 
 export default AuthController;

@@ -12,6 +12,7 @@ routes.put('/departments/:id', AdminController.updateDepartment);
 routes.delete('/departments/:id', AdminController.deleteDepartment);
 
 routes.post('/users/disable', AdminController.disableUser);
+routes.post('/users/enable', AdminController.enableUser);
 
 routes.post('/doctors', AdminController.createDoctor);
 routes.get('/doctors', AdminController.getAllDoctors);
