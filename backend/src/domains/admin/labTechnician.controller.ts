@@ -77,13 +77,14 @@ class LabTechnicianController {
     const { email, ...data } = updateLabTechnicianSchema.parse(payload);
     const labTechnician = await prisma.labTechnician.findUnique({
       where: { id },
+      include: { user: { select: { email: true } } },
     });
 
     if (!labTechnician) {
       throw new NotFoundError('Lab Technician not found');
     }
 
-    if (email) {
+    if (email && email !== labTechnician.user.email) {
       await AuthController.updateUserEmail(labTechnician.userId, email);
     }
 

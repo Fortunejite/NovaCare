@@ -77,13 +77,14 @@ class ReceptionistController {
     const { email, ...data } = updateReceptionistSchema.parse(payload);
     const receptionist = await prisma.receptionist.findUnique({
       where: { id },
+      include: { user: { select: { email: true } } },
     });
 
     if (!receptionist) {
       throw new NotFoundError('Receptionist not found');
     }
 
-    if (email) {
+    if (email && email !== receptionist.user.email) {
       await AuthController.updateUserEmail(receptionist.userId, email);
     }
 

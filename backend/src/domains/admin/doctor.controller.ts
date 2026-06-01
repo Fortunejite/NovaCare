@@ -72,13 +72,14 @@ class DoctorController {
     const { email, ...data } = updateDoctorSchema.parse(payload);
     const doctor = await prisma.doctor.findUnique({
       where: { id },
+      include: { user: { select: { email: true } } },
     });
 
     if (!doctor) {
       throw new NotFoundError('Doctor not found');
     }
 
-    if (email) {
+    if (email && email !== doctor.user.email) {
       await AuthController.updateUserEmail(doctor.userId, email);
     }
 

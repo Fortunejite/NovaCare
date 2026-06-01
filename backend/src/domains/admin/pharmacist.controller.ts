@@ -77,13 +77,14 @@ class PharmacistController {
     const { email, ...data } = updatePharmacistSchema.parse(payload);
     const pharmacist = await prisma.pharmacist.findUnique({
       where: { id },
+      include: { user: { select: { email: true } } },
     });
 
     if (!pharmacist) {
       throw new NotFoundError('Pharmacist not found');
     }
 
-    if (email) {
+    if (email && email !== pharmacist.user.email) {
       await AuthController.updateUserEmail(pharmacist.userId, email);
     }
 
