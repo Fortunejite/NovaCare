@@ -3,7 +3,7 @@ import { resend } from "."
 
 export const sendPasswordResetEmail = async (email: string, resetToken: string) => {
   const { data, error } = await resend.emails.send({
-    from: `Moorafrika <noreply@${config.domain}>`,
+    from: `NovaCare <noreply@${config.domain}>`,
     to: [email],
     subject: "Password Reset Request",
     html: `<p>You have requested a password reset. Click the link below to reset your password:</p>
