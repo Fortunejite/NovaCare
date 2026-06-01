@@ -2,9 +2,10 @@
 
 import api, { handleClientError } from '@/lib/api';
 import { StaffDto, StaffResponse, StaffSummaryResponse } from '@app/shared';
-import { Ban, Eye, Loader2, Microscope, Pill, Stethoscope, ClipboardList, Users, UserCheck } from 'lucide-react';
+import { Ban, Eye, Loader2, Microscope, Pill, Stethoscope, ClipboardList, Users, UserCheck, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,10 +43,10 @@ export default function AdminHomepage() {
   const limit = 10;
 
   const summaryCards = [
-    { key: 'doctors' as const, label: 'Doctors', icon: Stethoscope },
-    { key: 'pharmacists' as const, label: 'Pharmacists', icon: Pill },
-    { key: 'receptionists' as const, label: 'Receptionists', icon: ClipboardList },
-    { key: 'labTechnicians' as const, label: 'Lab technicians', icon: Microscope },
+    { key: 'doctors' as const, label: 'Doctors', icon: Stethoscope, href: '/admin/doctors' },
+    { key: 'pharmacists' as const, label: 'Pharmacists', icon: Pill, href: '/admin/pharmacists' },
+    { key: 'receptionists' as const, label: 'Receptionists', icon: ClipboardList, href: '/admin/receptionists' },
+    { key: 'labTechnicians' as const, label: 'Lab technicians', icon: Microscope, href: '/admin/lab-technicians' },
   ];
 
   const loadData = async (targetPage: number) => {
@@ -114,19 +115,24 @@ export default function AdminHomepage() {
     <div className="space-y-6">
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((item) => (
-          <Card key={item.key} className="gap-0 py-4">
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <item.icon className="size-5" />
+          <Link key={item.key} href={item.href} className="group block">
+            <Card className="gap-0 py-4 transition-colors group-hover:border-primary/40 group-hover:bg-muted/20">
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <item.icon className="size-5" />
+                  </div>
+                  <span className="text-3xl font-semibold tracking-tight text-foreground">
+                    {summary?.[item.key] ?? 0}
+                  </span>
                 </div>
-                <span className="text-3xl font-semibold tracking-tight text-foreground">
-                  {summary?.[item.key] ?? 0}
-                </span>
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
-            </CardContent>
-          </Card>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">{item.label}</p>
+                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </section>
 
