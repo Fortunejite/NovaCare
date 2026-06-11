@@ -1,3 +1,5 @@
+export * from './department.validation';
+
 export interface DepartmentDto {
   id: string;
   name: string;

@@ -1,5 +1,5 @@
-import { Role, UserStatus } from '../constants';
-import { PagedResponse } from './response';
+import { Role, UserStatus } from '../../shared/constants';
+import { PagedResponse } from '../../shared';
 
 export interface StaffDto {
   id: string;

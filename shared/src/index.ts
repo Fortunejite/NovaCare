@@ -1,3 +1,2 @@
-export * from './dtos';
-export * from './constants';
-export * from './validationSchemas';
+export * from './domains';
+export * from './shared';

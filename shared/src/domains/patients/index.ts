@@ -1,5 +1,7 @@
-import { PatientStatus } from "../constants";
-import { PagedResponse } from "./response";
+import { PatientStatus } from '../../shared/constants';
+import { PagedResponse } from '../../shared';
+
+export * from './patient.validation';
 
 export interface PatientDto {
   id: string;

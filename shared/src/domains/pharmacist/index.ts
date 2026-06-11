@@ -1,4 +1,6 @@
-import { PagedResponse } from "./response";
+import { PagedResponse } from "../../shared";
+
+export * from './pharmacist.validation';
 
 export interface PharmacistDto {
   id: string;

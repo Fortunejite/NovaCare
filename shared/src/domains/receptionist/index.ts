@@ -1,4 +1,6 @@
-import { PagedResponse } from "./response";
+import { PagedResponse } from '../../shared';
+
+export * from './receptionist.validation'
 
 export interface ReceptionistDto {
   id: string;
