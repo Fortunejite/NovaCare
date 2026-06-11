@@ -54,13 +54,13 @@ export default function AdminHomepage() {
 
     try {
       const [staffResult, summaryResult] = await Promise.all([
-        api.get('/admin/staff', {
+        api.get('/staff', {
           params: {
             page: targetPage,
             limit,
           },
         }),
-        api.get('/admin/staff/summary'),
+        api.get('/staff/summary'),
       ]);
 
       setStaffResponse(staffResult.data);
@@ -84,7 +84,7 @@ export default function AdminHomepage() {
     setIsDisabling(staff.id);
 
     try {
-      await api.post('/admin/users/enable', { email: staff.email });
+      await api.post('/auth/users/enable', { email: staff.email });
       await loadData(page);
     } catch (error) {
       handleClientError(error);
@@ -97,7 +97,7 @@ export default function AdminHomepage() {
     setIsDisabling(staff.id);
 
     try {
-      await api.post('/admin/users/disable', { email: staff.email });
+      await api.post('/auth/users/disable', { email: staff.email });
       await loadData(page);
     } catch (error) {
       handleClientError(error);

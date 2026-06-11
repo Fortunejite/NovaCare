@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/prisma';
-import { pageResponseMapper } from '@/mapper/pagedResponse';
-import { staffMapper } from '@/mapper/staff';
+import { pageResponseMapper } from '@app/shared';
+import { staffMapper } from './staff.mapper';
 
-class StaffController {
+class StaffService {
   static async getAllStaff(page = 1, limit = 10) {
     const [staff, total] = await Promise.all([
       prisma.user.findMany({
@@ -41,4 +41,4 @@ class StaffController {
   }
 }
 
-export default StaffController;
+export default StaffService;

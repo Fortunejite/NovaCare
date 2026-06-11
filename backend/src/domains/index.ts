@@ -1,3 +1,8 @@
 export { default as authRoutes } from './auth/auth.route';
-export { default as adminRoutes } from './admin/admin.route';
-export { default as receptionistRoutes } from './receptionist/receptionist.route';
+export { default as departmentsRoutes } from './departments/department.route';
+export { default as staffRoutes } from './staff/staff.route';
+export { default as doctorsRoutes } from './doctors/doctor.route';
+export { default as labTechniciansRoutes } from './labTechnicians/labTechnician.route';
+export { default as pharmacistsRoutes } from './pharmacists/pharmacist.route';
+export { default as receptionistsRoutes } from './receptionists/receptionist.route';
+export { default as patientsRoutes } from './patients/patient.route';

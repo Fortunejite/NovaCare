@@ -1,18 +1,18 @@
 import { prisma } from '@/lib/prisma';
-import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
-import { pageResponseMapper } from '@/mapper/pagedResponse';
 import {
   CreatePharmacistDto,
   createPharmacistSchema,
+  pageResponseMapper,
   PharmacistDto,
   PharmacistsResponse,
   UpdatePharmacistDto,
   updatePharmacistSchema,
 } from '@app/shared';
-import { pharmacistMapper } from '@/mapper/pharmacist';
+import { createNewUser, updateUserEmail } from '../auth';
+import { pharmacistMapper } from './pharmacist.mapper';
 
-class PharmacistController {
+class PharmacistService {
   private static include = { user: true };
 
   static async createPharmacist(
@@ -20,7 +20,7 @@ class PharmacistController {
   ): Promise<PharmacistDto> {
     const { email, ...data } = createPharmacistSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(
+    const newUser = await createNewUser(
       email,
       `${data.firstName} ${data.lastName}`,
       'pharmacist',
@@ -85,7 +85,7 @@ class PharmacistController {
     }
 
     if (email && email !== pharmacist.user.email) {
-      await AuthController.updateUserEmail(pharmacist.userId, email);
+      await updateUserEmail(pharmacist.userId, email);
     }
 
     const updatedPharmacist = await prisma.pharmacist.update({
@@ -98,4 +98,4 @@ class PharmacistController {
   }
 }
 
-export default PharmacistController;
+export default PharmacistService;

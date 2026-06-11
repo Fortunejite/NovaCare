@@ -4,21 +4,21 @@ import {
   createDoctorSchema,
   DoctorDto,
   DoctorsResponse,
+  pageResponseMapper,
   UpdateDoctorDto,
   updateDoctorSchema,
 } from '@app/shared';
-import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
-import { doctorMapper } from '@/mapper/doctor';
-import { pageResponseMapper } from '@/mapper/pagedResponse';
+import { doctorMapper } from './doctor.mapper';
+import { createNewUser, updateUserEmail } from '../auth';
 
-class DoctorController {
+class DoctorService {
   private static include = { user: true, department: true };
 
   static async createDoctor(payload: CreateDoctorDto): Promise<DoctorDto> {
     const { email, ...data } = createDoctorSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(
+    const newUser = await createNewUser(
       email,
       `${data.firstName} ${data.lastName}`,
       'doctor',
@@ -80,7 +80,7 @@ class DoctorController {
     }
 
     if (email && email !== doctor.user.email) {
-      await AuthController.updateUserEmail(doctor.userId, email);
+      await updateUserEmail(doctor.userId, email);
     }
 
     const updatedDoctor = await prisma.doctor.update({
@@ -93,4 +93,4 @@ class DoctorController {
   }
 }
 
-export default DoctorController;
+export default DoctorService;

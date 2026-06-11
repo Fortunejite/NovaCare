@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { receptionistMapper } from '@/mapper/receptionist';
+import { receptionistMapper } from './receptionist.mapper';
 import {
   CreateReceptionistDto,
   UpdateReceptionistDto,
@@ -7,12 +7,12 @@ import {
   ReceptionistsResponse,
   createReceptionistSchema,
   updateReceptionistSchema,
+  pageResponseMapper,
 } from '@app/shared';
-import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
-import { pageResponseMapper } from '@/mapper/pagedResponse';
+import { createNewUser, updateUserEmail } from '../auth';
 
-class ReceptionistController {
+class ReceptionistService {
   private static include = { user: true };
 
   static async createReceptionist(
@@ -20,7 +20,7 @@ class ReceptionistController {
   ): Promise<ReceptionistDto> {
     const { email, ...data } = createReceptionistSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(
+    const newUser = await createNewUser(
       email,
       `${data.firstName} ${data.lastName}`,
       'receptionist',
@@ -85,7 +85,7 @@ class ReceptionistController {
     }
 
     if (email && email !== receptionist.user.email) {
-      await AuthController.updateUserEmail(receptionist.userId, email);
+      await updateUserEmail(receptionist.userId, email);
     }
 
     const updatedReceptionist = await prisma.receptionist.update({
@@ -98,4 +98,4 @@ class ReceptionistController {
   }
 }
 
-export default ReceptionistController;
+export default ReceptionistService;

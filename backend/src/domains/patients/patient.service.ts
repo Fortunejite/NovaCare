@@ -1,8 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
-import { pageResponseMapper } from '@/mapper/pagedResponse';
-import { patientMapper } from '@/mapper/patient';
 import {
   CreatePatientDto,
   PatientDto,
@@ -10,17 +7,21 @@ import {
   PatientsResponse,
   UpdatePatientDto,
   updatePatientSchema,
+  pageResponseMapper,
 } from '@app/shared';
+import { createNewUser, updateUserEmail } from '../auth';
+import { patientMapper } from './patient.mapper';
 
-class PatientController {
+class PatientService {
   private static include = { user: true };
 
   static async createPatient(payload: CreatePatientDto): Promise<PatientDto> {
     const { email, ...data } = createPatientSchema.parse(payload);
 
-    const newUser = await AuthController.createNewPatientUser(
+    const newUser = await createNewUser(
       email,
       `${data.firstName} ${data.lastName}`,
+      'patient',
     );
 
     const patientProfile = await prisma.patient.create({
@@ -100,7 +101,7 @@ class PatientController {
     }
 
     if (email && email !== patient.user.email) {
-      await AuthController.updateUserEmail(patient.userId, email);
+      await updateUserEmail(patient.userId, email);
     }
 
     const updatedPatient = await prisma.patient.update({
@@ -113,4 +114,4 @@ class PatientController {
   }
 }
 
-export default PatientController;
+export default PatientService;

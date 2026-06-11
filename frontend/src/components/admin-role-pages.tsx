@@ -238,7 +238,7 @@ export function RoleListPage({ role }: { role: RoleKey }) {
     setIsLoading(true);
 
     try {
-      const result = await api.get(`/admin/${rolePathMap[role]}`, {
+      const result = await api.get(`/${rolePathMap[role]}`, {
         params: { page: targetPage, limit },
       });
 
@@ -407,7 +407,7 @@ export function RoleDetailsPage({ role, id }: { role: RoleKey; id: string }) {
         setIsLoading(true);
 
         try {
-          const result = await api.get(`/admin/${rolePathMap[role]}/${id}`);
+          const result = await api.get(`/${rolePathMap[role]}/${id}`);
           setRecord(result.data);
         } catch (error) {
           handleClientError(error);
@@ -488,12 +488,12 @@ export function RoleFormPage({ role, mode, id }: { role: RoleKey; mode: 'new' | 
 
     try {
       if (role === 'doctor') {
-        const departmentsResult = await api.get('/admin/departments');
+        const departmentsResult = await api.get('/departments');
         setDepartments(departmentsResult.data);
       }
 
       if (mode === 'edit' && id) {
-        const result = await api.get(`/admin/${rolePathMap[role]}/${id}`);
+        const result = await api.get(`/${rolePathMap[role]}/${id}`);
         const nextValues = initializeValues(config.fields);
 
         config.fields.forEach((field) => {
@@ -537,7 +537,7 @@ export function RoleFormPage({ role, mode, id }: { role: RoleKey; mode: 'new' | 
 
     try {
       const payload = buildPayload(config.fields, values);
-      const endpoint = `/admin/${rolePathMap[role]}`;
+      const endpoint = `/${rolePathMap[role]}`;
 
       if (mode === 'edit' && id) {
         await api.put(`${endpoint}/${id}`, payload);

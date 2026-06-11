@@ -4,7 +4,7 @@ import config from '@/config';
 import { RefreshTokenPayload, UserDto } from '@app/shared';
 
 
-class TokenController {
+class TokenService {
   generateAccessToken(payload: UserDto): string {
     return jwt.sign(payload, config.jwtSecret, { expiresIn: '10m' });
   }
@@ -35,4 +35,4 @@ class TokenController {
     return crypto.randomInt(100000, 999999).toString();
   }
 }
-export const tokenController = new TokenController();
+export const tokenService = new TokenService();

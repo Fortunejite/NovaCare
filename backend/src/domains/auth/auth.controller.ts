@@ -1,18 +1,5 @@
-import bcrypt from 'bcrypt';
-import { AuthProvider } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
-import { BadRequestError, UnAuthorizedError } from '@/lib/errors';
-import {
-  forgotPasswordSchema,
-  loginUserSchema,
-  resetPasswordSchema,
-  UserDto,
-} from '@app/shared';
-import { userMapper } from '@/mapper/user';
 import { NextFunction, Response, Request } from 'express';
-import { tokenController } from './token.controller';
-import { v4 as uuidv4 } from 'uuid';
-import { sendPasswordResetEmail } from '@/services/resend/password';
+import AuthService from './auth.service';
 
 class AuthController {
   private static getCookieOptions() {
@@ -38,25 +25,14 @@ class AuthController {
       };
     }
   }
-
-  private static async loginUser(
-    res: Response,
-    userData: UserDto,
-    rememberMe?: boolean,
-  ) {
-    const token = tokenController.generateAccessToken(userData);
-    const refreshToken = tokenController.generateRefreshToken(
-      userData.id,
-      rememberMe,
-    );
-
-    await prisma.user.update({
-      where: { id: userData.id },
-      data: { refreshToken },
-    });
-
+  static setCookies(payload: {
+    res: Response;
+    token: string;
+    refreshToken: string;
+    rememberMe?: boolean;
+  }) {
+    const { res, token, refreshToken, rememberMe } = payload;
     const cookieOptions = AuthController.getCookieOptions();
-
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
 
@@ -74,43 +50,16 @@ class AuthController {
     });
   }
 
-  static async localLogin(req: Request, res: Response, next: NextFunction) {
+  static async credentialsSignIn(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     try {
-      const { email, password, rememberMe } = loginUserSchema.parse(req.body);
-
-      const user = await prisma.user.findUnique({
-        where: { email },
-        include: { authMethods: true },
-      });
-      if (!user) {
-        throw new BadRequestError('Invalid email or password');
-      }
-
-      if (user.status !== 'active') {
-        throw new BadRequestError(
-          'Account is blocked. Please contact an administrator',
-        );
-      }
-
-      const localAuthMethod = user.authMethods.find(
-        (method) => method.provider === AuthProvider.LOCAL,
-      );
-
-      if (!localAuthMethod || !localAuthMethod.passwordHash) {
-        throw new BadRequestError('Invalid email or password');
-      }
-
-      const isPasswordValid = await bcrypt.compare(
-        password,
-        localAuthMethod.passwordHash,
-      );
-
-      if (!isPasswordValid) {
-        throw new BadRequestError('Invalid email or password');
-      }
-
-      await AuthController.loginUser(res, userMapper(user), rememberMe);
-      res.status(200).json(userMapper(user));
+      const { token, refreshToken, user, rememberMe } =
+        await AuthService.credentialsSignIn(req.body);
+      AuthController.setCookies({ res, token, refreshToken, rememberMe });
+      res.status(200).json(user);
     } catch (error) {
       next(error);
     }
@@ -118,19 +67,7 @@ class AuthController {
 
   static async getMe(req: Request, res: Response, next: NextFunction) {
     try {
-      const token = req.cookies.accessToken;
-      if (!token) {
-        throw new UnAuthorizedError('Login required');
-      }
-
-      const payload = tokenController.verifyAccessToken(token);
-      if (!payload) {
-        throw new UnAuthorizedError(
-          'Invalid or expired session, please log in again',
-        );
-      }
-
-      res.status(200).json(payload);
+      res.status(200).json(req.user);
     } catch (error) {
       next(error);
     }
@@ -138,36 +75,10 @@ class AuthController {
 
   static async refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
-      const refreshToken = req.cookies.refreshToken;
-      if (!refreshToken) {
-        throw new UnAuthorizedError('Login required');
-      }
-
-      const payload = tokenController.verifyRefreshToken(refreshToken);
-      if (!payload) {
-        throw new UnAuthorizedError(
-          'Invalid or expired session, please log in again',
-        );
-      }
-
-      const existingUser = await prisma.user.findUnique({
-        where: { id: payload.userId },
-      });
-      if (!existingUser || existingUser.refreshToken !== refreshToken) {
-        throw new UnAuthorizedError(
-          'Invalid or expired session, please log in again',
-        );
-      }
-
-      if (existingUser.status !== 'active') {
-        throw new BadRequestError(
-          'Account is blocked. Please contact an administrator',
-        );
-      }
-
-      const { refreshToken: _, ...userData } = existingUser;
-      await AuthController.loginUser(res, userData, payload.rememberMe);
-
+      const { token, refreshToken } = await AuthService.refreshToken(
+        req.cookies.refreshToken,
+      );
+      AuthController.setCookies({ res, token, refreshToken });
       res.status(200).json({ message: 'Token refreshed' });
     } catch (error) {
       next(error);
@@ -179,10 +90,7 @@ class AuthController {
       const userId = req.user.id;
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
-      await prisma.user.update({
-        where: { id: userId },
-        data: { refreshToken: null },
-      });
+      await AuthService.signOut(userId);
       res.status(204).send();
     } catch (error) {
       next(error);
@@ -191,39 +99,11 @@ class AuthController {
 
   static async forgotPassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email } = forgotPasswordSchema.parse(req.body);
-
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) {
-        res.status(200).json({
-          message:
-            'If an account with that email exists, a password reset link has been sent',
-        });
-        return;
-      }
-
-      const resetToken = uuidv4();
-      await prisma.passwordResetToken.deleteMany({
-        where: {
-          userId: user.id,
-        },
+      await AuthService.forgotPassword(req.body);
+      res.status(200).json({
+        message:
+          'If an account with that email exists, a password reset link has been sent',
       });
-
-      await prisma.passwordResetToken.create({
-        data: {
-          userId: user.id,
-          token: resetToken,
-          expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
-        },
-      });
-
-      await sendPasswordResetEmail(email, resetToken);
-      res
-        .status(200)
-        .json({
-          message:
-            'If an account with that email exists, a password reset link has been sent',
-        });
     } catch (err) {
       next(err);
     }
@@ -231,47 +111,28 @@ class AuthController {
 
   static async resetPassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const { token, newPassword } = resetPasswordSchema.parse(req.body);
-
-      const resetTokenRecord = await prisma.passwordResetToken.findUnique({
-        where: { token },
-        include: { user: { include: { authMethods: true } } },
-      });
-
-      if (!resetTokenRecord || resetTokenRecord.expiresAt < new Date()) {
-        throw new BadRequestError('Invalid or expired password reset token');
-      }
-
-      const newPasswordHash = await bcrypt.hash(newPassword, 10);
-
-      const localAuthMethod = resetTokenRecord.user.authMethods.find(
-        (method) => method.provider === AuthProvider.LOCAL,
-      );
-
-      if (!localAuthMethod) {
-        await prisma.authMethod.create({
-          data: {
-            provider: AuthProvider.LOCAL,
-            passwordHash: newPasswordHash,
-            user: { connect: { id: resetTokenRecord.userId } },
-          },
-        });
-      } else {
-        await prisma.authMethod.update({
-          where: { id: localAuthMethod.id },
-          data: { passwordHash: newPasswordHash },
-        });
-      }
-
-      await prisma.passwordResetToken.deleteMany({
-        where: {
-          userId: resetTokenRecord.userId,
-        },
-      });
-
+      await AuthService.resetPassword(req.body);
       res.status(200).json({ message: 'Password reset successful' });
     } catch (err) {
       next(err);
+    }
+  }
+
+  static async disableUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      await AuthService.blockUser(req.body.email);
+      res.status(200).json({ message: 'User disabled successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async enableUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      await AuthService.activateUser(req.body.email);
+      res.status(200).json({ message: 'User enabled successfully' });
+    } catch (error) {
+      next(error);
     }
   }
 }

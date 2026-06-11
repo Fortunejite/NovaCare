@@ -1,6 +1,5 @@
 import { BadRequestError, NotFoundError } from '@/lib/errors';
 import { prisma } from '@/lib/prisma';
-import { departmentMapper } from '@/mapper/department';
 import {
   CreateDepartmentDto,
   createDepartmentSchema,
@@ -9,8 +8,9 @@ import {
   UpdateDepartmentDto,
   updateDepartmentSchema,
 } from '@app/shared';
+import { departmentMapper } from './department.mapper';
 
-class DepartmentController {
+class DepartmentService {
   private static include = {
     _count: { select: { doctors: true } },
   };
@@ -106,4 +106,4 @@ class DepartmentController {
   }
 }
 
-export default DepartmentController;
+export default DepartmentService;

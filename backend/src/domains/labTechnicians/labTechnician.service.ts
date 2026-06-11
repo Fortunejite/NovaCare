@@ -1,8 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import AuthController from './auth.controller';
 import { NotFoundError } from '@/lib/errors';
-import { pageResponseMapper } from '@/mapper/pagedResponse';
-import { labTechnicianMapper } from '@/mapper/labTechnician';
 import {
   CreateLabTechnicianDto,
   LabTechnicianDto,
@@ -10,9 +7,12 @@ import {
   LabTechniciansResponse,
   UpdateLabTechnicianDto,
   updateLabTechnicianSchema,
+  pageResponseMapper,
 } from '@app/shared';
+import { createNewUser, updateUserEmail } from '../auth';
+import { labTechnicianMapper } from './labTechnician';
 
-class LabTechnicianController {
+class LabTechnicianService {
   private static include = { user: true };
 
   static async createLabTechnician(
@@ -20,7 +20,7 @@ class LabTechnicianController {
   ): Promise<LabTechnicianDto> {
     const { email, ...data } = createLabTechnicianSchema.parse(payload);
 
-    const newUser = await AuthController.createNewUser(
+    const newUser = await createNewUser(
       email,
       `${data.firstName} ${data.lastName}`,
       'labTechnician',
@@ -85,7 +85,7 @@ class LabTechnicianController {
     }
 
     if (email && email !== labTechnician.user.email) {
-      await AuthController.updateUserEmail(labTechnician.userId, email);
+      await updateUserEmail(labTechnician.userId, email);
     }
 
     const updatedLabTechnician = await prisma.labTechnician.update({
@@ -98,4 +98,4 @@ class LabTechnicianController {
   }
 }
 
-export default LabTechnicianController;
+export default LabTechnicianService;

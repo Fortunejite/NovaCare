@@ -1,5 +1,5 @@
 /// <reference path="../types/express.d.ts" />
-import { tokenController } from '@/domains/auth/token.controller';
+import { tokenService } from '@/domains/auth/token.service';
 import { ForbiddenError, UnAuthorizedError } from '@/lib/errors';
 import { Role } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
@@ -12,7 +12,7 @@ export const Authorize = (roles?: Role[]) => {
       throw new UnAuthorizedError('Login required');
     }
 
-    const payload = tokenController.verifyAccessToken(token);
+    const payload = tokenService.verifyAccessToken(token);
 
     if (!payload) {
       throw new UnAuthorizedError(

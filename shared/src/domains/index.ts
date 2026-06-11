@@ -6,3 +6,4 @@ export * from './receptionist';
 export * from './pharmacist';
 export * from './labTechnician';
 export * from './patients';
+export * from './appointments';

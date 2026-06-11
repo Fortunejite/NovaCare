@@ -69,7 +69,7 @@ export function DepartmentListPage() {
     setIsDeleting(department.id);
 
     try {
-      await api.delete(`/admin/departments/${department.id}`);
+      await api.delete(`/departments/${department.id}`);
       toast.success('Department deleted successfully');
       await loadDepartments();
     } catch (error) {
@@ -274,7 +274,7 @@ export function DepartmentFormPage({ mode, id }: { mode: 'new' | 'edit'; id?: st
         setIsLoading(true);
 
         try {
-          const response = await api.get(`/admin/departments/${id}`);
+          const response = await api.get(`/departments/${id}`);
           setValues({
             name: response.data.name ?? '',
             description: response.data.description ?? '',
@@ -317,11 +317,11 @@ export function DepartmentFormPage({ mode, id }: { mode: 'new' | 'edit'; id?: st
       };
 
       if (mode === 'edit' && id) {
-        await api.put(`/admin/departments/${id}`, payload);
+        await api.put(`/departments/${id}`, payload);
         toast.success('Department updated successfully');
         router.push(`/admin/departments/${id}`);
       } else {
-        const response = await api.post('/admin/departments', payload);
+        const response = await api.post('/departments', payload);
         toast.success('Department created successfully');
         router.push(`/admin/departments/${response.data.id}`);
       }
