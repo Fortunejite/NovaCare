@@ -45,8 +45,9 @@ class PatientService {
         where: search
           ? {
               OR: [
-                { firstName: { contains: search } },
-                { lastName: { contains: search } },
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+                { phoneNumber: { contains: search, mode: 'insensitive' } },
               ],
             }
           : undefined,
@@ -55,8 +56,9 @@ class PatientService {
         where: search
           ? {
               OR: [
-                { firstName: { contains: search } },
-                { lastName: { contains: search } },
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+                { phoneNumber: { contains: search, mode: 'insensitive' } },
               ],
             }
           : undefined,

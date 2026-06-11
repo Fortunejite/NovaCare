@@ -1,3 +1,5 @@
+import { PagedResponse } from '../../shared';
+
 export * from './appointment.validation';
 
 export interface ReceptionistAppointmentDto {
@@ -13,6 +15,8 @@ export interface ReceptionistAppointmentDto {
   createdAt: Date;
 }
 
+export type ReceptionistAppointmentsResponse = PagedResponse<ReceptionistAppointmentDto>;
+
 export interface DoctorAppointmentDto {
   id: string;
   patientId: string;
@@ -23,3 +27,5 @@ export interface DoctorAppointmentDto {
   status: 'scheduled' | 'completed' | 'cancelled';
   createdAt: Date;
 }
+
+export type DoctorAppointmentsResponse = PagedResponse<DoctorAppointmentDto>;
