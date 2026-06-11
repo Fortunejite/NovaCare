@@ -6,3 +6,4 @@ export { default as labTechniciansRoutes } from './labTechnicians/labTechnician.
 export { default as pharmacistsRoutes } from './pharmacists/pharmacist.route';
 export { default as receptionistsRoutes } from './receptionists/receptionist.route';
 export { default as patientsRoutes } from './patients/patient.route';
+export { default as appointmentRoutes } from './appointments/appointment.routes';

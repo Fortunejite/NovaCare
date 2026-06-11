@@ -212,7 +212,7 @@ model Appointment {
   receptionistId String
   patientId      String
   doctorId       String
-  date           DateTime
+  datetime       DateTime
   reason         String
   status         AppointmentStatus @default(scheduled)
   createdAt      DateTime          @default(now())

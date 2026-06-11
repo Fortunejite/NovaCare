@@ -1,11 +1,14 @@
 export * from './appointment.validation';
 
-export interface AppointmentDto {
+export interface ReceptionistAppointmentDto {
   id: string;
   patientId: string;
+  patientName: string;
   doctorId: string;
+  doctorName: string;
   receptionistId: string;
-  date: Date;
+  datetime: Date;
   reason: string;
   status: 'scheduled' | 'completed' | 'cancelled';
+  createdAt: Date;
 }

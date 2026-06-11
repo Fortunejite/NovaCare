@@ -46,14 +46,14 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
       case 'P2003':
         // Foreign key constraint violation
         return res.status(400).json({
-          error: 'ValidationError',
+          error: 'DatabaseValidationError',
           message: 'Invalid reference to related record',
         });
       
       case 'P2014':
         // Invalid ID
         return res.status(400).json({
-          error: 'ValidationError',
+          error: 'DatabaseValidationError',
           message: 'Invalid ID provided',
         });
       
@@ -75,7 +75,7 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
   // Prisma Client Validation Error
   if (err instanceof PrismaClientValidationError) {
     return res.status(400).json({
-      error: 'ValidationError',
+      error: 'DatabaseValidationError',
       message: 'Invalid data provided to database operation',
     });
   }

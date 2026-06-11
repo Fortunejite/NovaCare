@@ -5,6 +5,7 @@ import errorHandler from './middlewares/error.middleware';
 import loggerMiddleware from './middlewares/logger.middleware';
 import config from './config';
 import {
+  appointmentRoutes,
   authRoutes,
   departmentsRoutes,
   doctorsRoutes,
@@ -33,6 +34,7 @@ export const startApp = () => {
   // Routes
 
   app.use('/api/auth', authRoutes);
+  app.use('/api/appointments', appointmentRoutes)
   app.use('/api/departments', departmentsRoutes);
   app.use('/api/pharmacists', pharmacistsRoutes);
   app.use('/api/lab-technicians', labTechniciansRoutes);
