@@ -12,3 +12,14 @@ export interface ReceptionistAppointmentDto {
   status: 'scheduled' | 'completed' | 'cancelled';
   createdAt: Date;
 }
+
+export interface DoctorAppointmentDto {
+  id: string;
+  patientId: string;
+  patientName: string;
+  receptionistId: string;
+  datetime: Date;
+  reason: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  createdAt: Date;
+}
