@@ -14,7 +14,7 @@ import {
   DoctorAppointmentInclude,
 } from './appointment.mapper';
 import { BadRequestError, NotFoundError } from '@/lib/errors';
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 
 class AppointmentService {
   static async createAppointment(
@@ -39,17 +39,25 @@ class AppointmentService {
   static async fetchReceptionistAppointments(
     page = 1,
     limit = 10,
-    patientId: string,
+    patientId?: string,
+    doctorId?: string,
   ) {
+    const where = {} as Prisma.AppointmentWhereInput;
+    if (patientId) {
+      where['patientId'] = patientId;
+    }
+    if (doctorId) {
+      where['doctorId'] = doctorId;
+    }
     const [appointments, total] = await Promise.all([
       prisma.appointment.findMany({
         skip: (page - 1) * limit,
         take: limit,
-        where: { patientId },
+        where: where,
         include: ReceptionistAppointmentInclude,
       }),
       prisma.appointment.count({
-        where: { patientId },
+        where: where,
       }),
     ]);
 
@@ -86,19 +94,21 @@ class AppointmentService {
     page: number;
     limit: number;
     patientId?: string;
+    doctorId?: string;
     role: Role;
     userId: string;
   }) {
     switch (payload.role) {
       case Role.receptionist:
-        if (!payload.patientId) {
-          throw new BadRequestError('Patient ID is required for receptionists');
+        if (!payload.patientId && !payload.doctorId) {
+          throw new BadRequestError('Patient ID or Doctor ID are required for receptionists');
         }
 
         return this.fetchReceptionistAppointments(
           payload.page,
           payload.limit,
           payload.patientId,
+          payload.doctorId,
         );
       case Role.doctor:
         return this.fetchDoctorAppointments(
