@@ -24,7 +24,7 @@ export default function RoleLayout({
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-          <Link href="/receptionist/patients" className="flex items-center gap-3">
+          <Link href="/receptionist" className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-full border border-border bg-muted/40 text-primary">
               <ClipboardList className="size-5" />
             </div>

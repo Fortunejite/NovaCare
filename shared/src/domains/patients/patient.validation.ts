@@ -5,9 +5,7 @@ export const createPatientSchema = z.object({
   firstName: z.string().min(3),
   lastName: z.string().min(3),
   gender: z.string().min(3),
-  dateOfBirth: z.iso.datetime().refine((date) => !isNaN(Date.parse(date)), {
-    message: 'Invalid date format',
-  }),
+  dateOfBirth: z.coerce.date({ message: 'Invalid date format' }),
   bloodGroup: z.string().min(2),
   genotype: z.string().min(2),
 
@@ -38,9 +36,7 @@ export const updatePatientSchema = z.object({
   firstName: z.string().min(3).optional(),
   lastName: z.string().min(3).optional(),
   gender: z.string().min(3).optional(),
-  dateOfBirth: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: 'Invalid date format',
-  }).optional(),
+  dateOfBirth: z.coerce.date({ message: 'Invalid date format' }).optional(),
   bloodGroup: z.string().min(2).optional(),
   genotype: z.string().min(2).optional(),
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api, { handleClientError } from '@/lib/api';
-import { createPatientSchema, CreatePatientDto } from '@app/shared';
+import { CreatePatientDto, PatientDto } from '@app/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -96,23 +96,11 @@ export default function RegisterPatientPage() {
       status: form.status as CreatePatientDto['status'],
     } as CreatePatientDto;
 
-    const result = createPatientSchema.safeParse(payload as unknown as CreatePatientDto);
-    if (!result.success) {
-      const formatted: Record<string, string> = {};
-      result.error.issues.forEach((iss) => {
-        const key = Array.isArray(iss.path) && iss.path.length ? String(iss.path[0]) : 'form';
-        formatted[key] = iss.message;
-      });
-      setErrors(formatted);
-      toast.error('Please fix the highlighted fields');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
-      await api.post('/receptionist/patients', result.data);
+      const response = await api.post<PatientDto>('/patients', payload);
       toast.success('Patient registered');
-      router.push('/receptionist/patients');
+      router.push(`/receptionist/patients/${response.data.id}`);
     } catch (err) {
       handleClientError(err, { setErrors });
     } finally {
