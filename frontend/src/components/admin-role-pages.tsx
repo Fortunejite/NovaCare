@@ -30,6 +30,7 @@ import {
   PharmacistDto,
   ReceptionistDto,
 } from '@app/shared';
+import { formatLabel, formatValue } from '@/lib/utils';
 
 export type RoleKey = 'doctor' | 'pharmacist' | 'receptionist' | 'labTechnician';
 type RoleRoute = 'doctors' | 'pharmacists' | 'receptionists' | 'lab-technicians';
@@ -141,31 +142,6 @@ const roleConfigs: Record<RoleKey, RoleConfig> = {
 const formatName = (record: { firstName?: string | null; lastName?: string | null }) => {
   const fullName = `${record.firstName ?? ''} ${record.lastName ?? ''}`.trim();
   return fullName || 'Unnamed staff';
-};
-
-const formatLabel = (value: string) =>
-  value
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/_/g, ' ')
-    .replace(/^./, (char) => char.toUpperCase());
-
-const formatValue = (value: unknown) => {
-  if (value === null || value === undefined || value === '') {
-    return '—';
-  }
-
-  if (typeof value === 'string' && /T|Z/.test(value)) {
-    const date = new Date(value);
-    if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleString();
-    }
-  }
-
-  if (value instanceof Date) {
-    return value.toLocaleString();
-  }
-
-  return String(value);
 };
 
 const toFormDateTime = (value: unknown) => {

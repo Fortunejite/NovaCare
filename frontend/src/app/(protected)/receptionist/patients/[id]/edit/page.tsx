@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api, { handleClientError } from '@/lib/api';
-import { CreatePatientDto, PatientDto } from '@app/shared';
+import { PatientDto, UpdatePatientDto } from '@app/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,19 +11,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import LoadingPage from '@/components/loading-page';
 import { toast } from 'sonner';
 import {
   User,
-  Phone,
-  Mail,
   MapPin,
   HeartPulse,
-  Calendar,
-  Heart,
   ArrowLeft,
   ArrowRight,
   ShieldAlert,
-  Dna,
   Scale,
   Ruler,
   Loader2,
@@ -75,11 +71,61 @@ const initialForm: FormValues = {
   status: 'active',
 };
 
-export default function RegisterPatientPage() {
+const toFormDate = (value: unknown) => {
+  if (!value) return '';
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().split('T')[0];
+};
+
+export default function Page({ params }: IdParamProps) {
+  const { id } = use(params);
   const router = useRouter();
+
   const [form, setForm] = useState<FormValues>(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchPatient = async () => {
+      try {
+        setIsLoading(true);
+        const res = await api.get<PatientDto>(`/patients/${id}`);
+        const data = res.data;
+        setForm({
+          email: data.email || '',
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          gender: data.gender || '',
+          dateOfBirth: toFormDate(data.dateOfBirth),
+          bloodGroup: data.bloodGroup || '',
+          genotype: data.genotype || '',
+          phoneNumber: data.phoneNumber || '',
+          address: data.address || '',
+          city: data.city || '',
+          state: data.state || '',
+          maritalStatus: data.maritalStatus || 'single',
+          weight: data.weight !== undefined && data.weight !== null ? String(data.weight) : '',
+          height: data.height !== undefined && data.height !== null ? String(data.height) : '',
+          emergencyContactName: data.emergencyContactName || '',
+          emergencyContactPhone: data.emergencyContactPhone || '',
+          emergencyContactRelationship: data.emergencyContactRelationship || '',
+          allergies: data.allergies || '',
+          medicalHistory: data.medicalHistory || '',
+          status: data.status || 'active',
+        });
+      } catch (error) {
+        handleClientError(error);
+        toast.error('Failed to load patient profile');
+        router.push('/receptionist');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPatient();
+  }, [id, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -104,11 +150,10 @@ export default function RegisterPatientPage() {
     e.preventDefault();
     setErrors({});
 
-    // Validate inputs locally before sending
+    // Validate inputs locally
     const localErrors: Record<string, string> = {};
     if (!form.firstName) localErrors.firstName = 'First name is required';
     if (!form.lastName) localErrors.lastName = 'Last name is required';
-    if (!form.email) localErrors.email = 'Email address is required';
     if (!form.phoneNumber) localErrors.phoneNumber = 'Phone number is required';
     if (!form.gender) localErrors.gender = 'Gender is required';
     if (!form.dateOfBirth) localErrors.dateOfBirth = 'Date of birth is required';
@@ -119,8 +164,7 @@ export default function RegisterPatientPage() {
       return;
     }
 
-    // Build payload with proper types
-    const payload: CreatePatientDto = {
+    const payload: UpdatePatientDto = {
       email: form.email.trim(),
       firstName: form.firstName.trim(),
       lastName: form.lastName.trim(),
@@ -132,22 +176,22 @@ export default function RegisterPatientPage() {
       address: form.address.trim(),
       city: form.city.trim(),
       state: form.state.trim(),
-      maritalStatus: form.maritalStatus as CreatePatientDto['maritalStatus'],
-      weight: form.weight === '' ? 0 : Number(form.weight),
-      height: form.height === '' ? 0 : Number(form.height),
+      maritalStatus: form.maritalStatus as UpdatePatientDto['maritalStatus'],
+      weight: form.weight === '' ? undefined : Number(form.weight),
+      height: form.height === '' ? undefined : Number(form.height),
       emergencyContactName: form.emergencyContactName.trim(),
       emergencyContactPhone: form.emergencyContactPhone.trim(),
       emergencyContactRelationship: form.emergencyContactRelationship.trim(),
       allergies: form.allergies.trim() || undefined,
       medicalHistory: form.medicalHistory.trim() || undefined,
-      status: form.status as CreatePatientDto['status'],
+      status: form.status as UpdatePatientDto['status'],
     };
 
     setIsSubmitting(true);
     try {
-      const response = await api.post<PatientDto>('/patients', payload);
-      toast.success('Patient registered successfully');
-      router.push(`/receptionist/patients/${response.data.id}`);
+      await api.put<PatientDto>(`/patients/${id}`, payload);
+      toast.success('Patient profile updated successfully');
+      router.push(`/receptionist/patients/${id}`);
     } catch (err) {
       handleClientError(err, { setErrors });
     } finally {
@@ -155,23 +199,27 @@ export default function RegisterPatientPage() {
     }
   };
 
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <Card className="border-border bg-card">
         <CardHeader className="border-b border-border py-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-lg">Register New Patient</CardTitle>
-              <CardDescription>Capture details needed to intake a new patient record.</CardDescription>
+              <CardTitle className="text-lg">Edit Patient Profile</CardTitle>
+              <CardDescription>Modify intake credentials and medical record associations.</CardDescription>
             </div>
             <Button
               type="button"
               variant="outline"
               className="rounded-xl h-10 self-start sm:self-auto"
-              onClick={() => router.push('/receptionist')}
+              onClick={() => router.push(`/receptionist/patients/${id}`)}
             >
               <ArrowLeft className="size-4" />
-              Back to Dashboard
+              Back to Profile
             </Button>
           </div>
         </CardHeader>
@@ -216,17 +264,17 @@ export default function RegisterPatientPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
+                  <Label htmlFor="email" className="text-muted-foreground flex items-center gap-1.5">
+                    Email Address
+                  </Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="email@example.com"
                     value={form.email}
                     onChange={handleChange}
                     className="h-11 rounded-xl"
                   />
-                  {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -394,7 +442,7 @@ export default function RegisterPatientPage() {
                 <Input
                   id="allergies"
                   name="allergies"
-                  placeholder="Specify food, drug, or other allergies (if any)"
+                  placeholder="Specify allergies"
                   value={form.allergies}
                   onChange={handleChange}
                   className="h-11 rounded-xl"
@@ -537,7 +585,7 @@ export default function RegisterPatientPage() {
                 type="button"
                 variant="outline"
                 className="h-11 rounded-xl px-6"
-                onClick={() => router.push('/receptionist')}
+                onClick={() => router.push(`/receptionist/patients/${id}`)}
               >
                 Cancel
               </Button>
@@ -549,11 +597,11 @@ export default function RegisterPatientPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />
-                    Registering...
+                    Saving...
                   </>
                 ) : (
                   <>
-                    Register Patient
+                    Save Changes
                     <ArrowRight className="ml-2 size-4" />
                   </>
                 )}
