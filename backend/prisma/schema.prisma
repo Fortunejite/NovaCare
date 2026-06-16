@@ -38,6 +38,13 @@ enum AppointmentStatus {
   cancelled
 }
 
+enum AppointmentType {
+  consultation
+  follow_up
+  checkup
+  emergency
+}
+
 model AuthMethod {
   id           String       @id @default(uuid())
   userId       String
@@ -113,6 +120,7 @@ model Doctor {
   user         User          @relation(fields: [userId], references: [id])
   department   Department    @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   appointments Appointment[]
+  labRequests  LabRequest[]
 
   @@map("doctors")
 }
@@ -203,6 +211,8 @@ model Patient {
   userId       String        @unique
   user         User          @relation(fields: [userId], references: [id])
   appointments Appointment[]
+  labRequests  LabRequest[]
+  bills        Bill[]
 
   @@map("patients")
 }
@@ -214,13 +224,113 @@ model Appointment {
   doctorId       String
   datetime       DateTime
   reason         String
+  type           AppointmentType   @default(consultation)
   status         AppointmentStatus @default(scheduled)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
-  patient      Patient      @relation(fields: [patientId], references: [id])
-  doctor       Doctor       @relation(fields: [doctorId], references: [id])
-  receptionist Receptionist @relation(fields: [receptionistId], references: [id])
+  patient      Patient       @relation(fields: [patientId], references: [id])
+  doctor       Doctor        @relation(fields: [doctorId], references: [id])
+  receptionist Receptionist  @relation(fields: [receptionistId], references: [id])
+  consultation Consultation?
 
   @@map("appointments")
+}
+
+model Consultation {
+  id            String   @id @default(uuid())
+  appointmentId String   @unique
+  diagnosis     String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  appointment   Appointment    @relation(fields: [appointmentId], references: [id])
+  prescriptions Prescription[]
+
+  @@map("consultations")
+}
+
+model Medication {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  price         Float
+  stockQuantity Int
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  prescriptions Prescription[]
+
+  @@map("medications")
+}
+
+model Prescription {
+  id             String   @id @default(uuid())
+  consultationId String
+  medicationId   String
+  dosage         String
+  frequency      String
+  duration       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  consultation Consultation @relation(fields: [consultationId], references: [id])
+  medication   Medication   @relation(fields: [medicationId], references: [id])
+
+  @@map("prescriptions")
+}
+
+model LabRequest {
+  id        String   @id @default(uuid())
+  patientId String
+  doctorId  String
+  testType  String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient   Patient    @relation(fields: [patientId], references: [id])
+  doctor    Doctor     @relation(fields: [doctorId], references: [id])
+  labResult LabResult?
+
+  @@map("lab_requests")
+}
+
+model LabResult {
+  id           String   @id @default(uuid())
+  labRequestId String   @unique
+  resultData   String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  labRequest LabRequest @relation(fields: [labRequestId], references: [id])
+
+  @@map("lab_results")
+}
+
+model Bill {
+  id        String   @id @default(uuid())
+  patientId String
+  amount    Float
+  status    String   @default("unpaid")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient        Patient         @relation(fields: [patientId], references: [id])
+  paymentRecords PaymentRecord[]
+
+  @@map("bills")
+}
+
+model PaymentRecord {
+  id        String   @id @default(uuid())
+  billId    String
+  amount    Float
+  method    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bill Bill @relation(fields: [billId], references: [id])
+
+  @@map("payment_records")
 }

@@ -31,6 +31,7 @@ import {
   Phone,
   ClipboardList,
   Sparkles,
+  Calendar,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -284,9 +285,9 @@ export default function ReceptionistDashboard() {
                             </Link>
                           </Button>
                           <Button asChild variant="outline" size="sm" className="rounded-xl h-8">
-                            <Link href={`/receptionist/appointments/new?patientId=${patient.id}`}>
-                              <CalendarPlus className="size-3.5 mr-1" />
-                              Appt
+                            <Link href={`/receptionist/appointments?patientId=${patient.id}`}>
+                              <Calendar className="size-3.5 mr-1" />
+                              Appointments
                             </Link>
                           </Button>
                         </div>
@@ -337,9 +338,9 @@ export default function ReceptionistDashboard() {
                       </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm" className="flex-1 rounded-xl h-9">
-                      <Link href={`/receptionist/appointments/new?patientId=${patient.id}`}>
-                        <CalendarPlus className="size-3.5 mr-1.5" />
-                        Schedule
+                      <Link href={`/receptionist/appointments?patientId=${patient.id}`}>
+                        <Calendar className="size-3.5 mr-1.5" />
+                        Appointments
                       </Link>
                     </Button>
                   </div>

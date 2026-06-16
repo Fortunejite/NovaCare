@@ -229,7 +229,7 @@ export default function Page({ params }: IdParamProps) {
             
             {/* Section 1: Personal Details */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+              <div className="flex items-center gap-2 text-primary font-semibold text-lg">
                 <User className="size-4" />
                 <h2>Personal Information</h2>
               </div>
@@ -345,7 +345,7 @@ export default function Page({ params }: IdParamProps) {
 
             {/* Section 2: Clinical Details */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+              <div className="flex items-center gap-2 text-primary font-semibold text-lg">
                 <HeartPulse className="size-4" />
                 <h2>Vitals & Clinical Attributes</h2>
               </div>
@@ -453,7 +453,7 @@ export default function Page({ params }: IdParamProps) {
 
             {/* Section 3: Contact & Address */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+              <div className="flex items-center gap-2 text-primary font-semibold text-lg">
                 <MapPin className="size-4" />
                 <h2>Contact & Address Details</h2>
               </div>
@@ -502,7 +502,7 @@ export default function Page({ params }: IdParamProps) {
 
             {/* Section 4: Emergency Contact */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+              <div className="flex items-center gap-2 text-primary font-semibold text-lg">
                 <ShieldAlert className="size-4" />
                 <h2>Emergency Contact Details</h2>
               </div>
@@ -557,7 +557,7 @@ export default function Page({ params }: IdParamProps) {
 
             {/* Section 5: Medical History */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+              <div className="flex items-center gap-2 text-primary font-semibold text-lg">
                 <HeartPulse className="size-4" />
                 <h2>Medical History</h2>
               </div>
