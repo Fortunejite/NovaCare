@@ -126,7 +126,7 @@ export default function BookAppointmentPage() {
     try {
       await api.post('/appointments', payload);
       toast.success('Appointment scheduled successfully');
-      router.push(`/receptionist/patients/${patientId}`);
+      router.push(`/receptionist/appointments?patientId=${patientId}`);
     } catch (err) {
       handleClientError(err, { setErrors });
     } finally {

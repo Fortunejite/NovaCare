@@ -7,6 +7,7 @@ import config from './config';
 import {
   appointmentRoutes,
   authRoutes,
+  consultationRoutes,
   departmentsRoutes,
   doctorsRoutes,
   labTechniciansRoutes,
@@ -14,6 +15,7 @@ import {
   pharmacistsRoutes,
   receptionistsRoutes,
   staffRoutes,
+  summaryRoutes,
 } from './domains';
 
 export const startApp = () => {
@@ -42,6 +44,8 @@ export const startApp = () => {
   app.use('/api/doctors', doctorsRoutes);
   app.use('/api/receptionists', receptionistsRoutes);
   app.use('/api/staff', staffRoutes);
+  app.use('/api/consultations', consultationRoutes);
+  app.use('/api/summary', summaryRoutes);
 
   app.use('/status', (req, res) => {
     res.status(200).json({ running: true });

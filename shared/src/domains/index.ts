@@ -7,3 +7,6 @@ export * from './pharmacist';
 export * from './labTechnician';
 export * from './patients';
 export * from './appointments';
+export * from './consultaions';
+export * from './prescriptions';
+export * from './summary';

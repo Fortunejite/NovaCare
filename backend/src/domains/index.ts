@@ -7,3 +7,5 @@ export { default as pharmacistsRoutes } from './pharmacists/pharmacist.route';
 export { default as receptionistsRoutes } from './receptionists/receptionist.route';
 export { default as patientsRoutes } from './patients/patient.route';
 export { default as appointmentRoutes } from './appointments/appointment.routes';
+export { default as consultationRoutes } from './consultaions/consultaions.routes';
+export { default as summaryRoutes } from './summary/summary.routes';
