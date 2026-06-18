@@ -11,6 +11,7 @@ import {
   departmentsRoutes,
   doctorsRoutes,
   labTechniciansRoutes,
+  medicineRoutes,
   patientsRoutes,
   pharmacistsRoutes,
   receptionistsRoutes,
@@ -46,6 +47,7 @@ export const startApp = () => {
   app.use('/api/staff', staffRoutes);
   app.use('/api/consultations', consultationRoutes);
   app.use('/api/summary', summaryRoutes);
+  app.use('/api/medicines', medicineRoutes);
 
   app.use('/status', (req, res) => {
     res.status(200).json({ running: true });

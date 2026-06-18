@@ -10,3 +10,4 @@ export * from './appointments';
 export * from './consultaions';
 export * from './prescriptions';
 export * from './summary';
+export * from './medicine';
