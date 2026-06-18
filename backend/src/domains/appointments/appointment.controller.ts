@@ -14,6 +14,7 @@ class AppointmentController {
   static async fetchAppointments(req: Request, res: Response, next: NextFunction) {
     try {
       const { page = 1, limit = 10, patientId, doctorId } = req.query;
+      
       const appointments = await AppointmentService.fetchAppointments({
         page: Number(page),
         limit: Number(limit),

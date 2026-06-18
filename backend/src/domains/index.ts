@@ -10,3 +10,4 @@ export { default as appointmentRoutes } from './appointments/appointment.routes'
 export { default as consultationRoutes } from './consultaions/consultaions.routes';
 export { default as summaryRoutes } from './summary/summary.routes';
 export { default as medicineRoutes } from './medicine/medicine.routes';
+export { default as prescriptionsRoutes } from './prescriptions/prescriptions.routes';

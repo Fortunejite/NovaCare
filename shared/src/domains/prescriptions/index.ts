@@ -1,3 +1,5 @@
+import { PagedResponse, PrescriptionStatus } from '../../shared';
+
 export * from './prescriptions.validation';
 
 export interface PrescriptionDto {
@@ -7,6 +9,10 @@ export interface PrescriptionDto {
   dosage: string;
   frequency: string;
   duration: string;
+  pharmacistId: string | null;
+  status: PrescriptionStatus;
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type PrescriptionsResponse = PagedResponse<PrescriptionDto>;
