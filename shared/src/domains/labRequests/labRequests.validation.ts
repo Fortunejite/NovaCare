@@ -2,7 +2,7 @@ import { z } from "zod";
 import { labTests } from "../../shared";
 
 export const createLabRequestSchema = z.object({
-  patientId: z.string().min(1, "Patient ID is required"),
+  consultationId: z.string().min(1, "Consultation ID is required"),
   testType: z.enum(labTests, "Test type is required"),
 });
 

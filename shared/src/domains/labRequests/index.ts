@@ -4,18 +4,18 @@ export * from './labRequests.validation';
 
 export interface LabRequestDto {
   id: string;
-  patientId: string;
-  doctorId: string;
+  consultationId: string;
   testType: LabTestType;
+  labTechnicianId: string | null;
   status: LabRequestStatus;
   createdAt: Date;
 }
 
 export interface LabTechnicianLabRequestDto extends LabRequestDto {
   patientName: string;
-  patientEmail: string;
   patientPhone: string;
   doctorName: string;
+  consultationDate: Date;
   result: string | null;
 }
 

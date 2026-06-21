@@ -5,8 +5,7 @@ class LabRequestsController {
   static async createLabRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const payload = req.body;
-      const userId = req.user.id;
-      const labRequest = await LabRequestsService.createlabRequest(payload, userId);
+      const labRequest = await LabRequestsService.createlabRequest(payload);
       res.status(201).json(labRequest);
     } catch (error) {
       next(error);
@@ -18,7 +17,8 @@ class LabRequestsController {
       const page = Number(req.query.page ?? 1);
       const limit = Number(req.query.limit ?? 10);
       const status = req.query.status as string | undefined;
-      const response = await LabRequestsService.getAllLabRequests({ page, limit, status });
+      const userId = req.user.id;
+      const response = await LabRequestsService.getAllLabRequests({ page, limit, status, userId });
       res.json(response);
     } catch (error) {
       next(error);

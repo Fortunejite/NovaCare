@@ -303,8 +303,8 @@ model Prescription {
   status         PrescriptionStatus @default(pending)
 
   prescribedItems PrescribedItem[]
-  consultation    Consultation      @relation(fields: [consultationId], references: [id])
-  pharmacist      Pharmacist?       @relation(fields: [pharmacistId], references: [id])
+  consultation    Consultation     @relation(fields: [consultationId], references: [id])
+  pharmacist      Pharmacist?      @relation(fields: [pharmacistId], references: [id])
 
   @@map("prescriptions")
 }
@@ -327,12 +327,12 @@ model LabRequest {
   consultationId  String
   testType        LabTestType
   status          LabRequestStatus @default(pending)
-  labTechnicianId String
+  labTechnicianId String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  consultation  Consultation  @relation(fields: [consultationId], references: [id])
-  labTechnician LabTechnician @relation(fields: [labTechnicianId], references: [id])
+  consultation  Consultation   @relation(fields: [consultationId], references: [id])
+  labTechnician LabTechnician? @relation(fields: [labTechnicianId], references: [id])
   labResult     LabResult?
 
   @@map("lab_requests")

@@ -2,11 +2,20 @@ import { LabRequestDto, LabTechnicianLabRequestDto } from '@app/shared';
 import { LabRequest, Prisma } from '@prisma/client';
 
 export const LabTechnicianLabRequestInclude = {
-  patient: {
-    select: { lastName: true, firstName: true, phoneNumber: true },
-    include: { user: { select: { email: true } } },
+  consultation: {
+    select: { id: true },
+    include: {
+      appointment: {
+        select: { datetime: true },
+        include: {
+          patient: {
+            select: { firstName: true, lastName: true, phoneNumber: true },
+          },
+          doctor: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
   },
-  doctor: { select: { lastName: true, firstName: true } },
   labResult: { select: { resultData: true } },
 };
 
@@ -14,27 +23,37 @@ type LabRequestWithDetails = Prisma.LabRequestGetPayload<{
   include: typeof LabTechnicianLabRequestInclude;
 }>;
 
-export const labRequestMapper = (labRequest: LabRequest): LabRequestDto => ({
-  id: labRequest.id,
-  patientId: labRequest.patientId,
-  doctorId: labRequest.doctorId,
-  testType: labRequest.testType,
-  status: labRequest.status,
-  createdAt: labRequest.createdAt,
-});
+class LabTestMapper {
+  static toLabRequestDto(l: LabRequest): LabRequestDto {
+    return {
+      id: l.id,
+      consultationId: l.consultationId,
+      labTechnicianId: l.labTechnicianId,
+      status: l.status,
+      createdAt: l.createdAt,
+      testType: l.testType,
+    };
+  }
 
-export const labTechnicianLabRequestMapper = (
-  labRequest: LabRequestWithDetails,
-): LabTechnicianLabRequestDto => ({
-  id: labRequest.id,
-  patientId: labRequest.patientId,
-  doctorId: labRequest.doctorId,
-  testType: labRequest.testType,
-  status: labRequest.status,
-  createdAt: labRequest.createdAt,
-  patientName: `${labRequest.patient.firstName} ${labRequest.patient.lastName}`,
-  patientEmail: labRequest.patient.user?.email ?? null,
-  patientPhone: labRequest.patient.phoneNumber,
-  doctorName: `${labRequest.doctor.firstName} ${labRequest.doctor.lastName}`,
-  result: labRequest.labResult?.resultData || null,
-});
+  static toLabRequestDetailsDto(
+    l: LabRequestWithDetails,
+  ): LabTechnicianLabRequestDto {
+    const patientData = l.consultation.appointment.patient;
+    const doctorData = l.consultation.appointment.doctor;
+    return {
+      id: l.id,
+      consultationId: l.consultationId,
+      labTechnicianId: l.labTechnicianId,
+      status: l.status,
+      createdAt: l.createdAt,
+      patientPhone: patientData.phoneNumber,
+      patientName: `${patientData.firstName} ${patientData.lastName}`,
+      doctorName: `${doctorData.firstName} ${doctorData.lastName}`,
+      consultationDate: l.consultation.createdAt,
+      result: l.labResult?.resultData || null,
+      testType: l.testType,
+    };
+  }
+}
+
+export default LabTestMapper;
