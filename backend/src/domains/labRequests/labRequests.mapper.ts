@@ -3,10 +3,8 @@ import { LabRequest, Prisma } from '@prisma/client';
 
 export const LabTechnicianLabRequestInclude = {
   consultation: {
-    select: { id: true },
     include: {
       appointment: {
-        select: { datetime: true },
         include: {
           patient: {
             select: { firstName: true, lastName: true, phoneNumber: true },

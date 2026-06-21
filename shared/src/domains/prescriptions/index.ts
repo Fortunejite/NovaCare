@@ -10,6 +10,7 @@ export interface PrescribedItemDto {
   dosage: string;
   frequency: string;
   duration: string;
+  quantity: number | null;
 }
 
 export interface PrescriptionPharmacistListItem {
@@ -22,11 +23,12 @@ export interface PrescriptionPharmacistListItem {
   patientName: string;
   doctorName: string;
   consultationDate: string | Date;
+  prescribedItemsCount: number;
 }
 
 export type PrescriptionsListResponse = PagedResponse<PrescriptionPharmacistListItem>;
 
-export interface PrescriptionPharmacistDetails extends PrescriptionPharmacistListItem{
+export interface PrescriptionPharmacistDetails extends Omit<PrescriptionPharmacistListItem, 'prescribedItemsCount'> {
   prescribedItems: PrescribedItemDto[]
 }
 

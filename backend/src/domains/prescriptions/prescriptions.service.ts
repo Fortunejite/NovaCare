@@ -119,7 +119,7 @@ class PrescriptionsService {
       }
 
       const pharmacistId = pharmacist.id;
-      where = { pharmacistId };
+      where = { OR: [{ pharmacistId }, { status: 'pending' }] };
     }
 
     const [prescriptions, total] = await Promise.all([
@@ -205,12 +205,19 @@ class PrescriptionsService {
               `Insufficient stock for medication ${medication.name}`,
             );
           }
-          return tx.medication.update({
-            where: { id: medication.id },
-            data: {
-              stockQuantity: medication.stockQuantity - dispensedQuantity,
-            },
-          });
+          return tx.medication
+            .update({
+              where: { id: medication.id },
+              data: {
+                stockQuantity: medication.stockQuantity - dispensedQuantity,
+              },
+            })
+            .then(() =>
+              tx.prescribedItem.update({
+                where: { id: item.id },
+                data: { quantity: dispensedQuantity },
+              }),
+            );
         }),
       );
 

@@ -54,7 +54,7 @@ class LabRequestsService {
       }
 
       const labTechnicianId = labTechnician.id;
-      where = { labTechnicianId };
+      where = { OR: [{ labTechnicianId }, { status: 'pending' }] };
     }
     const [labRequests, total] = await Promise.all([
       prisma.labRequest.findMany({

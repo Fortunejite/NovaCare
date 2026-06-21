@@ -43,6 +43,7 @@ import {
   CalendarPlus,
 } from 'lucide-react';
 import Link from 'next/link';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
 
 export default function AppointmentsPage() {
   const router = useRouter();
@@ -209,13 +210,21 @@ export default function AppointmentsPage() {
   };
 
   // Handle Cancellation
-  const cancelAppointment = async (appointmentId: string) => {
-    if (!confirm('Are you sure you want to cancel this appointment?')) return;
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
+
+  const cancelAppointment = (appointmentId: string) => {
+    setCancelTargetId(appointmentId);
+    setCancelConfirmOpen(true);
+  };
+
+  const performCancel = async () => {
+    if (!cancelTargetId) return;
     try {
-      await api.put(`/appointments/${appointmentId}`, {
-        status: 'cancelled',
-      });
+      await api.put(`/appointments/${cancelTargetId}`, { status: 'cancelled' });
       toast.success('Appointment cancelled successfully');
+      setCancelConfirmOpen(false);
+      setCancelTargetId(null);
       loadAppointments();
     } catch (error) {
       handleClientError(error);
@@ -281,6 +290,19 @@ export default function AppointmentsPage() {
           </div>
         </CardHeader>
       </Card>
+
+      <ConfirmDialog
+        open={cancelConfirmOpen}
+        title="Cancel appointment"
+        description="Are you sure you want to cancel this appointment?"
+        confirmLabel="Cancel appointment"
+        cancelLabel="Keep appointment"
+        onConfirm={performCancel}
+        onCancel={() => {
+          setCancelConfirmOpen(false);
+          setCancelTargetId(null);
+        }}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[350px_1fr]">
         {/* Left Column: Filter Sidebar */}

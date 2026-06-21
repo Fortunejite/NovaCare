@@ -2,34 +2,35 @@
 
 import { useEffect, useState } from 'react';
 import api, { handleClientError } from '@/lib/api';
-import { PharmacistPrescriptionDto, PrescriptionsResponse } from '@app/shared';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PharmacistPrescriptionDto, PrescriptionPharmacistListItem, PrescriptionsListResponse } from '@app/shared';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, ClipboardCheck, ClipboardList, CheckCircle2, XCircle, Clock } from 'lucide-react';
-import { toast } from 'sonner';
+import { Search, Loader2, ClipboardCheck, ClipboardList, CheckCircle2, XCircle, Clock, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function PrescriptionsPage() {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [prescriptions, setPrescriptions] = useState<PharmacistPrescriptionDto[]>([]);
-  const [pagination, setPagination] = useState<PrescriptionsResponse['pagination'] | null>(null);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionPharmacistListItem[]>([]);
+  const [pagination, setPagination] = useState<PrescriptionsListResponse['pagination'] | null>(null);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'dispensed' | 'cancelled'>('all');
-  const [isDispensingId, setIsDispensingId] = useState<string | null>(null);
 
   // Load prescriptions
   const fetchPrescriptions = async () => {
     try {
       setIsLoading(true);
-      const res = await api.get<PrescriptionsResponse>('/prescriptions', {
+      const res = await api.get<PrescriptionsListResponse>('/prescriptions', {
         params: {
           page,
           limit: 10,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
         },
       });
       setPrescriptions(res.data.data);
@@ -43,24 +44,14 @@ export default function PrescriptionsPage() {
 
   useEffect(() => {
     fetchPrescriptions();
-  }, [page]);
+  }, [page, statusFilter]);
 
   // Handle dispensing
-  const handleDispense = async (prescriptionId: string) => {
-    if (!confirm('Are you sure you want to dispense this prescription? This will deduct 1 unit from medication stock.')) {
-      return;
-    }
+  const router = useRouter();
 
-    setIsDispensingId(prescriptionId);
-    try {
-      await api.post(`/prescriptions/${prescriptionId}/dispense`);
-      toast.success('Prescription dispensed successfully');
-      fetchPrescriptions();
-    } catch (err) {
-      handleClientError(err);
-    } finally {
-      setIsDispensingId(null);
-    }
+  const handleDispense = (prescriptionId: string) => {
+    // navigate to detail view where dispensing (with item ids/quantities) occurs
+    router.push(`/pharmacist/prescriptions/${prescriptionId}`);
   };
 
   const getStatusBadge = (status: PharmacistPrescriptionDto['status']) => {
@@ -93,17 +84,12 @@ export default function PrescriptionsPage() {
 
   // Filter list client-side based on search term and status tab selection
   const filteredPrescriptions = prescriptions.filter((item) => {
-    // Status Filter
-    if (statusFilter !== 'all' && item.status !== statusFilter) {
-      return false;
-    }
-
-    // Search Filter (by Patient Name or Medication Name)
+    // Search Filter (by Patient Name or Doctor Name)
     if (searchTerm.trim() !== '') {
       const query = searchTerm.toLowerCase();
       const matchPatient = item.patientName.toLowerCase().includes(query);
-      const matchMed = item.medicationName.toLowerCase().includes(query);
-      return matchPatient || matchMed;
+      const matchDoctor = item.doctorName.toLowerCase().includes(query);
+      return matchPatient || matchDoctor;
     }
 
     return true;
@@ -173,8 +159,8 @@ export default function PrescriptionsPage() {
                 <TableHeader className="bg-muted/30">
                   <TableRow className="border-b border-border">
                     <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground pl-6">Patient</TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Prescribed Medication</TableHead>
-                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Instructions</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Doctor</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Prescribed Items</TableHead>
                     <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</TableHead>
                     <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-right pr-6">Action</TableHead>
                   </TableRow>
@@ -191,37 +177,26 @@ export default function PrescriptionsPage() {
                       <TableRow key={item.id} className="border-b border-border hover:bg-muted/10 transition-colors">
                         <TableCell className="py-4.5 pl-6">
                           <div>
-                            <p className="font-bold text-foreground">{item.patientName}</p>
+                            <Link href={`/pharmacist/prescriptions/${item.id}`} className="font-bold text-foreground hover:underline">{item.patientName}</Link>
                             <p className="text-xs text-muted-foreground mt-0.5">Diagnosed: {parsedDate}</p>
                           </div>
                         </TableCell>
                         <TableCell className="py-4.5 font-semibold text-foreground">
-                          {item.medicationName}
+                          Dr {item.doctorName}
                         </TableCell>
                         <TableCell className="py-4.5">
-                          <div className="text-sm space-y-0.5">
-                            <p className="font-semibold text-foreground">{item.dosage}</p>
-                            <p className="text-xs text-muted-foreground">{item.frequency} • {item.duration}</p>
-                          </div>
+                          {item.prescribedItemsCount} item{item.prescribedItemsCount !== 1 && 's'}
                         </TableCell>
                         <TableCell className="py-4.5">
-                          {getStatusBadge(item.status)}
+                          {getStatusBadge(item.status as PharmacistPrescriptionDto['status'])}
                         </TableCell>
                         <TableCell className="py-4.5 text-right pr-6">
-                          {item.status === 'pending' && (
-                            <Button
-                              onClick={() => handleDispense(item.id)}
-                              disabled={isDispensingId === item.id}
-                              className="rounded-lg h-9 bg-primary text-primary-foreground hover:bg-primary/95 text-xs font-semibold gap-1.5 shadow-sm"
-                            >
-                              {isDispensingId === item.id ? (
-                                <Loader2 className="size-3.5 animate-spin" />
-                              ) : (
-                                <ClipboardCheck className="size-3.5" />
-                              )}
-                              Dispense
-                            </Button>
-                          )}
+                          <Button
+                            onClick={() => handleDispense(item.id)}
+                          >
+                            <Eye className="size-3.5" />
+                            See Details
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );

@@ -1,17 +1,14 @@
 import {
   PrescribedItemDto,
-  PrescriptionDto,
   PrescriptionPharmacistDetails,
   PrescriptionPharmacistListItem,
 } from '@app/shared';
-import { Prescription, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export const PharmacistListItemInclude = {
   consultation: {
-    select: { id: true },
     include: {
       appointment: {
-        select: { datetime: true },
         include: {
           patient: { select: { firstName: true, lastName: true } },
           doctor: { select: { firstName: true, lastName: true } },
@@ -19,6 +16,7 @@ export const PharmacistListItemInclude = {
       },
     },
   },
+  prescribedItems: true,
 };
 
 export const PharmacistDetailsInclude = {
@@ -56,6 +54,7 @@ class PrescriptionsMapper {
       patientName: `${p.consultation.appointment.patient.firstName} ${p.consultation.appointment.patient.lastName}`,
       doctorName: `${p.consultation.appointment.doctor.firstName} ${p.consultation.appointment.doctor.lastName}`,
       consultationDate: p.consultation.createdAt,
+      prescribedItemsCount: p.prescribedItems.length,
     };
   }
 
@@ -65,6 +64,7 @@ class PrescriptionsMapper {
       prescriptionId: p.prescriptionId,
       medicationId: p.medicationId,
       medicationName: p.medication.name,
+      quantity: p.quantity,
       dosage: p.dosage,
       frequency: p.frequency,
       duration: p.duration,

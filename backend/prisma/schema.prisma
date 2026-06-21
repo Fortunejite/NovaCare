@@ -315,11 +315,14 @@ model PrescribedItem {
   dosage         String
   frequency      String
   duration       String
+  quantity       Int?
   prescriptionId String
   createdAt      DateTime @default(now())
 
   medication   Medication   @relation(fields: [medicationId], references: [id])
   prescription Prescription @relation(fields: [prescriptionId], references: [id])
+
+  @@map("prescribed_items")
 }
 
 model LabRequest {
