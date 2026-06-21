@@ -1,129 +1,169 @@
-import { BadRequestError, NotFoundError } from "@/lib/errors";
-import { prisma } from "@/lib/prisma";
-import { UpdatePrescriptionSchemaDto, PrescriptionDto, updatePrescriptionSchema, PrescriptionsResponse, pageResponseMapper, PharmacistPrescriptionDto } from "@app/shared";
-import { prescriptionMapper } from "./prescriptions.mapper";
+import { BadRequestError, NotFoundError } from '@/lib/errors';
+import { prisma } from '@/lib/prisma';
+import {
+  UpdatePrescriptionSchemaDto,
+  updatePrescriptionSchema,
+  pageResponseMapper,
+  PrescriptionsListResponse,
+  PrescriptionPharmacistDetails,
+  PrescribedItemDto,
+  DispensePrescriptionSchemaDto,
+  dispensePrescriptionSchema,
+  CreatePrescriptionSchemaDto,
+  createPrescriptionSchema,
+} from '@app/shared';
+import PrescriptionsMapper, {
+  PharmacistDetailsInclude,
+  PharmacistListItemInclude,
+  PrescribedItemsInclude,
+} from './prescriptions.mapper';
+import { Prisma } from '@prisma/client';
 
 class PrescriptionsService {
-  static async updatePrescription(
+  static async addPrescriptionItem(
     prescriptionId: string,
-    itemId: string,
-    payload: UpdatePrescriptionSchemaDto,
-  ): Promise<PrescriptionDto> {
-    const data = updatePrescriptionSchema.parse(payload);
+    payload: CreatePrescriptionSchemaDto,
+  ): Promise<PrescribedItemDto> {
+    const data = createPrescriptionSchema.parse(payload);
 
     const prescriptionExists = await prisma.prescription.findUnique({
       where: { id: prescriptionId },
+      select: { status: true },
     });
     if (!prescriptionExists) {
       throw new NotFoundError('Prescription not found');
     }
 
-    const updatedPrescription = await prisma.prescription.update({
-      where: { id: prescriptionId },
-      data,
-    });
-
-    return prescriptionMapper(updatedPrescription);
-  }
-
-  static async getAllPrescriptions(userId: string, page: number, limit: number): Promise<PrescriptionsResponse> {
-    const skip = (page - 1) * limit;
-
-    const pharmacist = await prisma.pharmacist.findFirst({
-      where: { userId },
-    });
-
-    if (!pharmacist) {
-      throw new NotFoundError('Pharmacist not found');
+    if (prescriptionExists.status !== 'pending') {
+      throw new BadRequestError('Only pending prescriptions can be updated');
     }
 
-    const pharmacistId = pharmacist.id;
-    const prescriptions = await prisma.prescription.findMany({
-      where: { OR: [{ pharmacistId }, { status: 'pending' }] },
-      include: {
-        medication: true,
-        consultation: {
-          include: {
-            appointment: {
-              include: {
-                patient: true,
-              },
-            },
-          },
-        },
-      },
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
+    const newPrescriptionItem = await prisma.prescribedItem.create({
+      data: { prescriptionId, ...data },
+      include: PrescribedItemsInclude,
     });
 
-    const total = await prisma.prescription.count({
-      where: { OR: [{ pharmacistId }, { status: 'pending' }] },
+    return PrescriptionsMapper.toPrescribedItemDto(newPrescriptionItem);
+  }
+
+  static async updatePrescriptionItem(
+    prescriptionId: string,
+    itemId: string,
+    payload: UpdatePrescriptionSchemaDto,
+  ): Promise<PrescribedItemDto> {
+    const data = updatePrescriptionSchema.parse(payload);
+
+    const prescriptionExists = await prisma.prescription.findUnique({
+      where: { id: prescriptionId },
+      select: { status: true },
+    });
+    if (!prescriptionExists) {
+      throw new NotFoundError('Prescription not found');
+    }
+
+    if (prescriptionExists.status !== 'pending') {
+      throw new BadRequestError('Only pending prescriptions can be updated');
+    }
+
+    const updatedPrescription = await prisma.prescribedItem.update({
+      where: { id: itemId },
+      include: PrescribedItemsInclude,
+      data,
     });
 
-    const data = prescriptions.map((p: any): PharmacistPrescriptionDto => ({
-      id: p.id,
-      consultationId: p.consultationId,
-      medicationId: p.medicationId,
-      dosage: p.dosage,
-      frequency: p.frequency,
-      duration: p.duration,
-      pharmacistId: p.pharmacistId,
-      status: p.status,
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
-      medicationName: p.medication.name,
-      patientName: `${p.consultation.appointment.patient.firstName} ${p.consultation.appointment.patient.lastName}`,
-      consultationDate: p.consultation.createdAt,
-    }));
+    return PrescriptionsMapper.toPrescribedItemDto(updatedPrescription);
+  }
+
+  static async deletePrescriptionItem(
+    prescriptionId: string,
+    itemId: string,
+  ): Promise<void> {
+    const prescriptionExists = await prisma.prescription.findUnique({
+      where: { id: prescriptionId },
+      select: { status: true },
+    });
+    if (!prescriptionExists) {
+      throw new NotFoundError('Prescription not found');
+    }
+
+    if (prescriptionExists.status !== 'pending') {
+      throw new BadRequestError('Only pending prescriptions can be updated');
+    }
+
+    await prisma.prescribedItem.delete({
+      where: { id: itemId },
+    });
+    return;
+  }
+
+  static async getAllPrescriptions(payload: {
+    status?: string;
+    userId: string;
+    page: number;
+    limit: number;
+  }): Promise<PrescriptionsListResponse> {
+    const { status, page, userId, limit } = payload;
+    const skip = (page - 1) * limit;
+
+    let where: Prisma.PrescriptionWhereInput = {};
+
+    if (status === 'pending') {
+      where = { status: 'pending' };
+    } else {
+      const pharmacist = await prisma.pharmacist.findFirst({
+        where: { userId },
+      });
+
+      if (!pharmacist) {
+        throw new NotFoundError('Pharmacist not found');
+      }
+
+      const pharmacistId = pharmacist.id;
+      where = { pharmacistId };
+    }
+
+    const [prescriptions, total] = await Promise.all([
+      prisma.prescription.findMany({
+        where,
+        include: PharmacistListItemInclude,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.prescription.count({
+        where,
+      }),
+    ]);
 
     return pageResponseMapper({
-      data,
+      data: prescriptions.map(PrescriptionsMapper.toPharmacistListItemDto),
       total,
       page,
       limit,
-    })
+    });
   }
 
-  static async getPrescriptionById(prescriptionId: string): Promise<PharmacistPrescriptionDto> {
+  static async getPrescriptionById(
+    prescriptionId: string,
+  ): Promise<PrescriptionPharmacistDetails> {
     const prescription = await prisma.prescription.findUnique({
       where: { id: prescriptionId },
-      include: {
-        medication: true,
-        consultation: {
-          include: {
-            appointment: {
-              include: {
-                patient: true,
-              },
-            },
-          },
-        },
-      },
+      include: PharmacistDetailsInclude,
     });
+
     if (!prescription) {
       throw new NotFoundError('Prescription not found');
     }
 
-    const p: any = prescription;
-    return {
-      id: p.id,
-      consultationId: p.consultationId,
-      medicationId: p.medicationId,
-      dosage: p.dosage,
-      frequency: p.frequency,
-      duration: p.duration,
-      pharmacistId: p.pharmacistId,
-      status: p.status,
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
-      medicationName: p.medication.name,
-      patientName: `${p.consultation.appointment.patient.firstName} ${p.consultation.appointment.patient.lastName}`,
-      consultationDate: p.consultation.createdAt,
-    };
+    return PrescriptionsMapper.toPharmacistDetailsDto(prescription);
   }
 
-  static async dispensePrescription(prescriptionId: string, userId: string): Promise<void> {
+  static async dispensePrescription(
+    payload: DispensePrescriptionSchemaDto,
+    prescriptionId: string,
+    userId: string,
+  ): Promise<void> {
+    const { dispensedItems } = dispensePrescriptionSchema.parse(payload);
     const prescriptionExists = await prisma.prescription.findUnique({
       where: { id: prescriptionId },
     });
@@ -149,20 +189,30 @@ class PrescriptionsService {
 
     // Atomically update prescription status and decrement medication stock
     await prisma.$transaction(async (tx) => {
-      const pres = await tx.prescription.findUnique({ where: { id: prescriptionId } });
+      const pres = await tx.prescription.findUnique({
+        where: { id: prescriptionId },
+        include: { prescribedItems: { include: { medication: true } } },
+      });
       if (!pres) throw new NotFoundError('Prescription not found');
 
-      const medication = await tx.medication.findUnique({ where: { id: pres.medicationId } });
-      if (!medication) throw new NotFoundError('Medication not found');
-
-      if (medication.stockQuantity <= 0) {
-        throw new BadRequestError('Insufficient medication stock to dispense prescription');
-      }
-
-      await tx.medication.update({
-        where: { id: medication.id },
-        data: { stockQuantity: medication.stockQuantity - 1 },
-      });
+      await Promise.all(
+        pres.prescribedItems.map((item) => {
+          const dispensedQuantity =
+            dispensedItems.find((di) => di.itemId === item.id)?.quantity || 1;
+          const medication = item.medication;
+          if (medication.stockQuantity < dispensedQuantity) {
+            throw new BadRequestError(
+              `Insufficient stock for medication ${medication.name}`,
+            );
+          }
+          return tx.medication.update({
+            where: { id: medication.id },
+            data: {
+              stockQuantity: medication.stockQuantity - dispensedQuantity,
+            },
+          });
+        }),
+      );
 
       await tx.prescription.update({
         where: { id: prescriptionId },

@@ -289,7 +289,7 @@ model Medication {
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
 
-  prescribedItems PrescribedItems[]
+  prescribedItems PrescribedItem[]
 
   @@map("medications")
 }
@@ -302,14 +302,14 @@ model Prescription {
   pharmacistId   String?
   status         PrescriptionStatus @default(pending)
 
-  prescribedItems PrescribedItems[]
+  prescribedItems PrescribedItem[]
   consultation    Consultation      @relation(fields: [consultationId], references: [id])
   pharmacist      Pharmacist?       @relation(fields: [pharmacistId], references: [id])
 
   @@map("prescriptions")
 }
 
-model PrescribedItems {
+model PrescribedItem {
   id             String   @id @default(uuid())
   medicationId   String
   dosage         String

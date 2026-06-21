@@ -6,9 +6,28 @@ export interface PrescribedItemDto {
   id: string;
   prescriptionId: string;
   medicationId: string;
+  medicationName: string;
   dosage: string;
   frequency: string;
   duration: string;
+}
+
+export interface PrescriptionPharmacistListItem {
+  id: string;
+  consultationId: string;
+  pharmacistId: string | null;
+  status: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  patientName: string;
+  doctorName: string;
+  consultationDate: string | Date;
+}
+
+export type PrescriptionsListResponse = PagedResponse<PrescriptionPharmacistListItem>;
+
+export interface PrescriptionPharmacistDetails extends PrescriptionPharmacistListItem{
+  prescribedItems: PrescribedItemDto[]
 }
 
 export interface PrescriptionDto {
@@ -22,7 +41,7 @@ export interface PrescriptionDto {
 }
 
 export interface PharmacistPrescribedItemsDto extends PrescribedItemDto {
-  medicationName: string;
+  prescribedItems: string;
 }
 
 export interface PharmacistPrescriptionDto extends PrescriptionDto {
@@ -31,4 +50,3 @@ export interface PharmacistPrescriptionDto extends PrescriptionDto {
   consultationDate: Date;
 }
 
-export type PrescriptionsResponse = PagedResponse<PharmacistPrescriptionDto>;

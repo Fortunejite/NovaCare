@@ -1,5 +1,6 @@
 import { ConsultationDto } from '@app/shared';
 import { Prisma } from '@prisma/client';
+import { toPrescribedItemDto } from '../prescriptions';
 
 export const DoctorConsultationInclude = {
   appointment: {
@@ -9,7 +10,7 @@ export const DoctorConsultationInclude = {
       },
     },
   },
-  prescriptions: true,
+  prescriptions: { include: { prescribedItems: { include: { medication: { select: { name: true } } } } } },
 };
 
 type DoctorAppointment = Prisma.ConsultationGetPayload<{
@@ -30,6 +31,9 @@ export const doctorConsultationMapper = (payload: DoctorAppointment): Consultati
     appointmentId: payload.appointment.id,
     patientName,
     patientPhoneNumber: patientInfo.phoneNumber,
-    prescriptions: payload.prescriptions,
+    prescriptions: payload.prescriptions.map((prescription) => ({
+      ...prescription,
+      prescribedItems: prescription.prescribedItems.map(toPrescribedItemDto),
+    })),
   };
 };

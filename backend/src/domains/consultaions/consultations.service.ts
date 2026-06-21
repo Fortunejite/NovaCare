@@ -45,7 +45,7 @@ class ConsultaionService {
           },
         });
 
-        await tx.prescribedItems.createMany({
+        await tx.prescribedItem.createMany({
           data: prescriptions.map((pres) => ({
             prescriptionId: prescription.id,
             ...pres,
