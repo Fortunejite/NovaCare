@@ -39,9 +39,15 @@ class ConsultaionService {
       consultationId = consultaton.id;
 
       if (prescriptions) {
-        await tx.prescription.createMany({
-          data: prescriptions.map((pres) => ({
+        const prescription = await tx.prescription.create({
+          data: {
             consultationId,
+          },
+        });
+
+        await tx.prescribedItems.createMany({
+          data: prescriptions.map((pres) => ({
+            prescriptionId: prescription.id,
             ...pres,
           })),
         });

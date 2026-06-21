@@ -6,6 +6,7 @@ const routes = Router();
 
 routes.post('/', Authorize(['admin']), PharmacistController.createPharmacist);
 routes.get('/', Authorize(['admin']), PharmacistController.getAllPharmacists);
+routes.get('/me', Authorize(['pharmacist']), PharmacistController.getMe);
 routes.get('/:id', Authorize(['admin']), PharmacistController.getPharmacistById);
 routes.put('/:id', Authorize(['admin']), PharmacistController.updatePharmacist);
 

@@ -65,6 +65,16 @@ class PharmacistController {
       next(error);
     }
   }
+
+  static async getMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user.id;
+      const pharmacist = await PharmacistService.getPharmacistByUserId(userId);
+      res.status(200).json(pharmacist);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default PharmacistController;
