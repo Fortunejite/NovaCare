@@ -9,6 +9,7 @@ import {
   authRoutes,
   consultationRoutes,
   departmentsRoutes,
+  labRequestsRoutes,
   doctorsRoutes,
   labTechniciansRoutes,
   medicineRoutes,
@@ -41,6 +42,7 @@ export const startApp = () => {
   app.use('/api/appointments', appointmentRoutes)
   app.use('/api/departments', departmentsRoutes);
   app.use('/api/pharmacists', pharmacistsRoutes);
+  app.use('/api/lab-requests', labRequestsRoutes);
   app.use('/api/lab-technicians', labTechniciansRoutes);
   app.use('/api/patients', patientsRoutes);
   app.use('/api/doctors', doctorsRoutes);

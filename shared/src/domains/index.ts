@@ -11,3 +11,4 @@ export * from './consultaions';
 export * from './prescriptions';
 export * from './summary';
 export * from './medicine';
+export * from './labRequests';

@@ -70,6 +70,19 @@ class LabTechnicianService {
     return labTechnicianMapper(labTechnician);
   }
 
+  static async getLabTechnicianByUserId(userId: string): Promise<LabTechnicianDto> {
+    const labTechnician = await prisma.labTechnician.findUnique({
+      where: { userId },
+      include: this.include,
+    });
+
+    if (!labTechnician) {
+      throw new NotFoundError('Lab Technician profile not found');
+    }
+
+    return labTechnicianMapper(labTechnician);
+  }
+
   static async updateLabTechnician(
     id: string,
     payload: UpdateLabTechnicianDto,

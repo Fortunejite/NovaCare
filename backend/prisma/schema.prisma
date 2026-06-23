@@ -57,6 +57,20 @@ enum PrescriptionStatus {
   cancelled
 }
 
+enum LabTestType {
+  blood_test
+  urine_test
+  x_ray
+  mri
+  ct_scan
+  ecg
+  ultrasound
+  biopsy
+  genetic_test
+  allergy_test
+  pathology_test
+}
+
 model AuthMethod {
   id           String       @id @default(uuid())
   userId       String
@@ -132,7 +146,6 @@ model Doctor {
   user         User          @relation(fields: [userId], references: [id])
   department   Department    @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   appointments Appointment[]
-  labRequests  LabRequest[]
 
   @@map("doctors")
 }
@@ -186,7 +199,8 @@ model LabTechnician {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  labRequests LabRequest[]
+  user        User         @relation(fields: [userId], references: [id])
 
   @@map("lab_technicians")
 }
@@ -224,7 +238,6 @@ model Patient {
   userId       String        @unique
   user         User          @relation(fields: [userId], references: [id])
   appointments Appointment[]
-  labRequests  LabRequest[]
   bills        Bill[]
 
   @@map("patients")
@@ -260,21 +273,23 @@ model Consultation {
 
   appointment   Appointment    @relation(fields: [appointmentId], references: [id])
   prescriptions Prescription[]
+  labRequests   LabRequest[]
 
   @@map("consultations")
 }
 
 model Medication {
-  id            String         @id @default(uuid())
+  id            String    @id @default(uuid())
   name          String
   description   String?
   price         Float
   stockQuantity Int
   weight        Float? // in grams
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
-  prescriptions Prescription[]
+
+  prescribedItems PrescribedItem[]
 
   @@map("medications")
 }
@@ -282,34 +297,46 @@ model Medication {
 model Prescription {
   id             String             @id @default(uuid())
   consultationId String
-  medicationId   String
-  dosage         String
-  frequency      String
-  duration       String
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   pharmacistId   String?
   status         PrescriptionStatus @default(pending)
 
-  consultation Consultation @relation(fields: [consultationId], references: [id])
-  medication   Medication   @relation(fields: [medicationId], references: [id])
-  pharmacist   Pharmacist?  @relation(fields: [pharmacistId], references: [id])
+  prescribedItems PrescribedItem[]
+  consultation    Consultation     @relation(fields: [consultationId], references: [id])
+  pharmacist      Pharmacist?      @relation(fields: [pharmacistId], references: [id])
 
   @@map("prescriptions")
 }
 
-model LabRequest {
-  id        String           @id @default(uuid())
-  patientId String
-  doctorId  String
-  testType  String
-  status    LabRequestStatus @default(pending)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+model PrescribedItem {
+  id             String   @id @default(uuid())
+  medicationId   String
+  dosage         String
+  frequency      String
+  duration       String
+  quantity       Int?
+  prescriptionId String
+  createdAt      DateTime @default(now())
 
-  patient   Patient    @relation(fields: [patientId], references: [id])
-  doctor    Doctor     @relation(fields: [doctorId], references: [id])
-  labResult LabResult?
+  medication   Medication   @relation(fields: [medicationId], references: [id])
+  prescription Prescription @relation(fields: [prescriptionId], references: [id])
+
+  @@map("prescribed_items")
+}
+
+model LabRequest {
+  id              String           @id @default(uuid())
+  consultationId  String
+  testType        LabTestType
+  status          LabRequestStatus @default(pending)
+  labTechnicianId String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  consultation  Consultation   @relation(fields: [consultationId], references: [id])
+  labTechnician LabTechnician? @relation(fields: [labTechnicianId], references: [id])
+  labResult     LabResult?
 
   @@map("lab_requests")
 }

@@ -70,6 +70,19 @@ class PharmacistService {
     return pharmacistMapper(pharmacist);
   }
 
+  static async getPharmacistByUserId(userId: string): Promise<PharmacistDto> {
+    const pharmacist = await prisma.pharmacist.findUnique({
+      where: { userId },
+      include: this.include,
+    });
+
+    if (!pharmacist) {
+      throw new NotFoundError('Pharmacist profile not found');
+    }
+
+    return pharmacistMapper(pharmacist);
+  }
+
   static async updatePharmacist(
     id: string,
     payload: UpdatePharmacistDto,
