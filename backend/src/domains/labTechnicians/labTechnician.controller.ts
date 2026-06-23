@@ -67,6 +67,16 @@ class LabTechnicianController {
       next(error);
     }
   }
+
+  static async getMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user.id;
+      const labTechnician = await LabTechnicianService.getLabTechnicianByUserId(userId);
+      res.status(200).json(labTechnician);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default LabTechnicianController;

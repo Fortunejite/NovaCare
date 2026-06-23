@@ -8,8 +8,6 @@ export const createLabRequestSchema = z.object({
 
 export type CreateLabRequestSchemaDto = z.infer<typeof createLabRequestSchema>;
 
-export const labRequestStatusSchema = z.enum(labTests)
-
 export const createLabResultSchema = z.object({
   labRequestId: z.string().min(1, "Lab Request ID is required"),
   result: z.string().min(1, "Result is required"),

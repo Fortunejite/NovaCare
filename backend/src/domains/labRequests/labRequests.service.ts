@@ -4,18 +4,19 @@ import {
   createLabRequestSchema,
   CreateLabRequestSchemaDto,
   LabRequestDto,
-  labRequestStatusSchema,
   LabTechnicianLabRequestDto,
   LabTechnicianLabRequestResponse,
   pageResponseMapper,
 } from '@app/shared';
-import { LabRequestStatus, LabTestType, Prisma } from '@prisma/client';
+import { LabTestType, Prisma } from '@prisma/client';
 import LabTestMapper, {
   LabTechnicianLabRequestInclude,
 } from './labRequests.mapper';
 
 class LabRequestsService {
-  static async createlabRequest(payload: CreateLabRequestSchemaDto): Promise<LabRequestDto> {
+  static async createlabRequest(
+    payload: CreateLabRequestSchemaDto,
+  ): Promise<LabRequestDto> {
     const data = createLabRequestSchema.parse(payload);
 
     const labRequest = await prisma.labRequest.create({
@@ -37,13 +38,10 @@ class LabRequestsService {
     const { userId, page, limit, status } = payload;
     const skip = (page - 1) * limit;
 
-    const statusFilter = status
-      ? (labRequestStatusSchema.parse(status) as LabRequestStatus)
-      : null;
     let where: Prisma.LabRequestWhereInput = {};
 
-    if (statusFilter === 'pending') {
-      where = { status: statusFilter };
+    if (status === 'pending') {
+      where = { status };
     } else {
       const labTechnician = await prisma.labTechnician.findFirst({
         where: { userId },
@@ -54,7 +52,11 @@ class LabRequestsService {
       }
 
       const labTechnicianId = labTechnician.id;
-      where = { OR: [{ labTechnicianId }, { status: 'pending' }] };
+      if (status === 'completed') {
+        where = { labTechnicianId, status: 'completed' };
+      } else {
+        where = { OR: [{ labTechnicianId }, { status: 'pending' }] };
+      }
     }
     const [labRequests, total] = await Promise.all([
       prisma.labRequest.findMany({
@@ -94,6 +96,7 @@ class LabRequestsService {
   static async generateLabResult(
     labRequestId: string,
     resultData: string,
+    userId: string,
   ): Promise<LabTechnicianLabRequestDto> {
     const labRequest = await prisma.labRequest.findUnique({
       where: { id: labRequestId },
@@ -107,15 +110,25 @@ class LabRequestsService {
       );
     }
 
+    const labTechnician = await prisma.labTechnician.findFirst({
+      where: { userId },
+    });
+
+    if (!labTechnician) {
+      throw new NotFoundError('Lab technician not found');
+    }
+
+    const labTechnicianId = labTechnician.id;
+
     // create lab result and update request status atomically
-    const updated = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       const labResult = await tx.labResult.create({
         data: { labRequestId, resultData },
       });
 
       const req = await tx.labRequest.update({
         where: { id: labRequestId },
-        data: { status: 'completed' },
+        data: { status: 'completed', labTechnicianId },
       });
 
       return { labResult, req };

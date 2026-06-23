@@ -41,7 +41,7 @@ class LabRequestsController {
       const { result } = req.body;
       const userId = req.user.id;
       // optionally check user role/permission in middleware; here we just call service
-      const updated = await LabRequestsService.generateLabResult(id as string, result as string);
+      const updated = await LabRequestsService.generateLabResult(id as string, result as string, userId);
       res.status(200).json(updated);
     } catch (error) {
       next(error);

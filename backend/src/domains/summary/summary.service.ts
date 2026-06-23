@@ -72,6 +72,28 @@ class SummaryService {
       outOfStockMedications,
     };
   }
+
+  static async getLabTechnicianSummary(userId: string): Promise<any> {
+    const labTechnician = await prisma.labTechnician.findUnique({ where: { userId } });
+
+    if (!labTechnician) {
+      throw new NotFoundError('Lab technician not found');
+    }
+
+    const [totalCompletedByMe, totalPendingAssignedToMe, totalPendingUnassigned, totalLabRequests] = await Promise.all([
+      prisma.labRequest.count({ where: { labTechnicianId: labTechnician.id, status: 'completed' } }),
+      prisma.labRequest.count({ where: { labTechnicianId: labTechnician.id, status: 'pending' } }),
+      prisma.labRequest.count({ where: { labTechnicianId: null, status: 'pending' } }),
+      prisma.labRequest.count({}),
+    ]);
+
+    return {
+      totalCompletedByMe,
+      totalPendingAssignedToMe,
+      totalPendingUnassigned,
+      totalLabRequests,
+    };
+  }
 }
 
 export default SummaryService;

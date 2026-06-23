@@ -21,6 +21,16 @@ class SummaryController {
       next(error);
     }
   }
+
+  static async getLabTechnicianSummary(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.user;
+      const summary = await SummaryService.getLabTechnicianSummary(user.id);
+      res.status(200).json(summary);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default SummaryController;

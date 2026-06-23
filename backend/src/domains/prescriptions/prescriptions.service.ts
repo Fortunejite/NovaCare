@@ -119,7 +119,11 @@ class PrescriptionsService {
       }
 
       const pharmacistId = pharmacist.id;
-      where = { OR: [{ pharmacistId }, { status: 'pending' }] };
+      if (status === 'dispensed') {
+        where = { pharmacistId, status: 'dispensed' };
+      } else {
+        where = { OR: [{ pharmacistId }, { status: 'pending' }] };
+      }
     }
 
     const [prescriptions, total] = await Promise.all([

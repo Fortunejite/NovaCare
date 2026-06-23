@@ -9,3 +9,10 @@ export interface PharmacistSummaryDto {
   totalMedications: number;
   outOfStockMedications: number;
 }
+
+export interface LabTechnicianSummaryDto {
+  totalCompletedByMe: number;
+  totalPendingAssignedToMe: number;
+  totalPendingUnassigned: number;
+  totalLabRequests: number;
+}
