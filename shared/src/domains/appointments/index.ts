@@ -25,6 +25,7 @@ export interface DoctorAppointmentDto {
   datetime: Date;
   reason: string;
   status: 'scheduled' | 'completed' | 'cancelled';
+  consultationId: string | null;
   createdAt: Date;
 }
 

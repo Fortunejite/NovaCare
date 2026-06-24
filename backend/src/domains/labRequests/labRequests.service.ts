@@ -16,8 +16,26 @@ import LabTestMapper, {
 class LabRequestsService {
   static async createlabRequest(
     payload: CreateLabRequestSchemaDto,
+    userId: string,
   ): Promise<LabRequestDto> {
     const data = createLabRequestSchema.parse(payload);
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundError('Doctor not found');
+    }
+
+    const consultation = await prisma.consultation.findUnique({
+      where: { id: data.consultationId },
+      include: { appointment: { select: { doctorId: true } } },
+    });
+
+    if (!consultation || consultation.appointment.doctorId !== doctor.id) {
+      throw new NotFoundError('Consultation not found');
+    }
 
     const labRequest = await prisma.labRequest.create({
       data: {

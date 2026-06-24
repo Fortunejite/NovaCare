@@ -65,6 +65,19 @@ class DoctorService {
     return doctorMapper(doctor);
   }
 
+  static async getDoctorByUserId(userId: string): Promise<DoctorDto> {
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId },
+      include: this.include,
+    });
+
+    if (!doctor) {
+      throw new NotFoundError('Doctor not found');
+    }
+
+    return doctorMapper(doctor);
+  }
+
   static async updateDoctor(
     id: string,
     payload: UpdateDoctorDto,

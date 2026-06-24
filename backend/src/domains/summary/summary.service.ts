@@ -4,25 +4,60 @@ import { NotFoundError } from "@/lib/errors";
 
 class SummaryService {
   static async getDoctorSummary(doctorId: string): Promise<DoctorSummaryDto> {
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId: doctorId },
+      select: { id: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundError("Doctor not found");
+    }
+
     const now = new Date();
-    const [todayScheduledAppointments, todayCompletedAppointments] = await Promise.all([
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+    const [
+      todayScheduledAppointments,
+      todayCompletedAppointments,
+      todayPendingAppointments,
+      totalConsultations,
+      pendingLabRequests,
+      pendingPrescriptions,
+    ] = await Promise.all([
       prisma.appointment.count({
         where: {
-          doctorId,
-          datetime: {
-            gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-            lt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1),
-          },
+          doctorId: doctor.id,
+          datetime: { gte: todayStart, lt: todayEnd },
         },
       }),
       prisma.appointment.count({
         where: {
-          doctorId,
+          doctorId: doctor.id,
           status: "completed",
-          datetime: {
-            gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-            lt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1),
-          },
+          datetime: { gte: todayStart, lt: todayEnd },
+        },
+      }),
+      prisma.appointment.count({
+        where: {
+          doctorId: doctor.id,
+          status: "scheduled",
+          datetime: { gte: todayStart, lt: todayEnd },
+        },
+      }),
+      prisma.consultation.count({
+        where: { appointment: { doctorId: doctor.id } },
+      }),
+      prisma.labRequest.count({
+        where: {
+          status: "pending",
+          consultation: { appointment: { doctorId: doctor.id } },
+        },
+      }),
+      prisma.prescription.count({
+        where: {
+          status: "pending",
+          consultation: { appointment: { doctorId: doctor.id } },
         },
       }),
     ])
@@ -30,6 +65,10 @@ class SummaryService {
     return {
       todayCompletedAppointments,
       todayScheduledAppointments,
+      todayPendingAppointments,
+      totalConsultations,
+      pendingLabRequests,
+      pendingPrescriptions,
     }
   }
 
