@@ -69,7 +69,17 @@ class AppointmentService {
     });
   }
 
-  static async fetchDoctorAppointments(doctorId: string, page = 1, limit = 10) {
+  static async fetchDoctorAppointments(userId: string, page = 1, limit = 10) {
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundError('Doctor not found');
+    }
+
+    const doctorId = doctor.id;
     const [appointments, total] = await Promise.all([
       prisma.appointment.findMany({
         skip: (page - 1) * limit,
@@ -134,7 +144,17 @@ class AppointmentService {
     return receptionistAppointmentMapper(appointment);
   }
 
-  static async fetchDoctorAppointment(doctorId: string, appointmentId: string) {
+  static async fetchDoctorAppointment(userId: string, appointmentId: string) {
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundError('Doctor not found');
+    }
+
+    const doctorId = doctor.id;
     const appointment = await prisma.appointment.findUnique({
       where: { id: appointmentId },
       include: DoctorAppointmentInclude,

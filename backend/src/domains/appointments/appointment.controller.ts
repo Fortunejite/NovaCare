@@ -13,16 +13,26 @@ class AppointmentController {
 
   static async fetchAppointments(req: Request, res: Response, next: NextFunction) {
     try {
-      const { page = 1, limit = 10, patientId, doctorId } = req.query;
+      const { page = 1, limit = 10, patientId, doctorId, date } = req.query;
       
       const appointments = await AppointmentService.fetchAppointments({
         page: Number(page),
         limit: Number(limit),
         patientId: patientId as string,
         doctorId: doctorId as string,
+        date: date as string,
         role: req.user.role,
         userId: req.user.id,
       });
+      res.status(200).json(appointments);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async fetchTodayAppointments(req: Request, res: Response, next: NextFunction) {
+    try {
+      const appointments = await AppointmentService.fetchTodayDoctorAppointments(req.user.id);
       res.status(200).json(appointments);
     } catch (error) {
       next(error);

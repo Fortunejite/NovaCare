@@ -33,6 +33,15 @@ class DoctorController {
     }
   }
 
+  static async getMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const doctor = await DoctorService.getDoctorByUserId(req.user.id);
+      res.status(200).json(doctor);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async updateDoctor(req: Request, res: Response, next: NextFunction) {
     try {
       const doctor = await DoctorService.updateDoctor(req.params.id as string, req.body);

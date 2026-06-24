@@ -4,11 +4,20 @@ import { NotFoundError } from "@/lib/errors";
 
 class SummaryService {
   static async getDoctorSummary(doctorId: string): Promise<DoctorSummaryDto> {
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId: doctorId },
+      select: { id: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundError("Doctor not found");
+    }
+
     const now = new Date();
     const [todayScheduledAppointments, todayCompletedAppointments] = await Promise.all([
       prisma.appointment.count({
         where: {
-          doctorId,
+          doctorId: doctor.id,
           datetime: {
             gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
             lt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1),
@@ -17,7 +26,7 @@ class SummaryService {
       }),
       prisma.appointment.count({
         where: {
-          doctorId,
+          doctorId: doctor.id,
           status: "completed",
           datetime: {
             gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
