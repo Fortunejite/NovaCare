@@ -13,7 +13,10 @@ export const ReceptionistAppointmentInclude = {
 export const DoctorAppointmentInclude = {
   patient: {
     select: { lastName: true, firstName: true }
-  }
+  },
+  consultation: {
+    select: { id: true },
+  },
 };
 
 type ReceptionistAppointment = Prisma.AppointmentGetPayload<{
@@ -49,5 +52,6 @@ export const doctorAppointmentMapper = (
   datetime: appointment.datetime,
   reason: appointment.reason,
   status: appointment.status,
+  consultationId: appointment.consultation?.id ?? null,
   createdAt: appointment.createdAt,
 });

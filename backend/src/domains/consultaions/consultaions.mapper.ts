@@ -11,6 +11,12 @@ export const DoctorConsultationInclude = {
     },
   },
   prescriptions: { include: { prescribedItems: { include: { medication: { select: { name: true } } } } } },
+  labRequests: {
+    include: {
+      labTechnician: { select: { firstName: true, lastName: true } },
+      labResult: { select: { resultData: true } },
+    },
+  },
 };
 
 type DoctorAppointment = Prisma.ConsultationGetPayload<{
@@ -29,11 +35,24 @@ export const doctorConsultationMapper = (payload: DoctorAppointment): Consultati
     completedAt: payload.createdAt,
 
     appointmentId: payload.appointment.id,
+    appointmentDate: payload.appointment.datetime,
     patientName,
     patientPhoneNumber: patientInfo.phoneNumber,
     prescriptions: payload.prescriptions.map((prescription) => ({
       ...prescription,
       prescribedItems: prescription.prescribedItems.map(toPrescribedItemDto),
+    })),
+    labRequests: payload.labRequests.map((request) => ({
+      id: request.id,
+      consultationId: request.consultationId,
+      testType: request.testType,
+      status: request.status,
+      labTechnicianId: request.labTechnicianId,
+      labTechnicianName: request.labTechnician
+        ? `${request.labTechnician.firstName} ${request.labTechnician.lastName}`
+        : null,
+      result: request.labResult?.resultData ?? null,
+      createdAt: request.createdAt,
     })),
   };
 };

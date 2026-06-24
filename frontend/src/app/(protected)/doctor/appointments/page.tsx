@@ -28,12 +28,13 @@ export default function DoctorAppointmentsPage() {
   const [pagination, setPagination] = useState<DoctorAppointmentsResponse['pagination'] | null>(null);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<'all' | AppointmentStatus>('all');
+  const [date, setDate] = useState('');
 
   const fetchAppointments = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await api.get<DoctorAppointmentsResponse>('/appointments', {
-        params: { page, limit: 10 },
+        params: { page, limit: 10, date: date || undefined },
       });
       setAppointments(res.data.data);
       setPagination(res.data.pagination);
@@ -42,7 +43,7 @@ export default function DoctorAppointmentsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [page]);
+  }, [page, date]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -115,14 +116,25 @@ export default function DoctorAppointmentsPage() {
                 </button>
               ))}
             </div>
-            <div className="relative w-full md:max-w-xs">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row">
               <Input
-                className="h-10 rounded-xl pl-9 border-border"
-                placeholder="Search patient or reason..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                type="date"
+                className="h-10 rounded-xl border-border md:w-44"
+                value={date}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setPage(1);
+                }}
               />
+              <div className="relative w-full md:w-72">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="h-10 rounded-xl pl-9 border-border"
+                  placeholder="Search patient or reason..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -180,15 +192,20 @@ export default function DoctorAppointmentsPage() {
                         <TableCell className="py-4.5 text-right pr-6">
                           {appointment.status === 'scheduled' ? (
                             <Button asChild>
-                              <Link href={`/doctor/consultations/${appointment.id}`}>
+                              <Link href={`/doctor/appointments/${appointment.id}`}>
                                 <ClipboardPlus className="size-3.5" />
                                 Start Consultation
                               </Link>
                             </Button>
+                          ) : appointment.consultationId ? (
+                            <Button asChild variant="outline">
+                              <Link href={`/doctor/consultations/${appointment.consultationId}/details`}>
+                                View Consultation
+                              </Link>
+                            </Button>
                           ) : (
                             <Button disabled>
-                              <ClipboardPlus className="size-3.5" />
-                              Start Consultation
+                              View Consultation
                             </Button>
                           )}
                         </TableCell>

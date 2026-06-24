@@ -5,7 +5,7 @@ class LabRequestsController {
   static async createLabRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const payload = req.body;
-      const labRequest = await LabRequestsService.createlabRequest(payload);
+      const labRequest = await LabRequestsService.createlabRequest(payload, req.user.id);
       res.status(201).json(labRequest);
     } catch (error) {
       next(error);

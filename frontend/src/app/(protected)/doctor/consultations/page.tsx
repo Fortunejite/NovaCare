@@ -3,119 +3,170 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import api, { handleClientError } from '@/lib/api';
-import { DoctorAppointmentDto, DoctorAppointmentsResponse } from '@app/shared';
+import { ConsultationDto, ConsultationsResponse } from '@app/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   CalendarDays,
-  CheckCircle2,
-  ClipboardPlus,
+  Eye,
+  FileText,
+  FlaskConical,
   Loader2,
-  Stethoscope,
+  Pill,
 } from 'lucide-react';
 
 export default function DoctorConsultationsPage() {
-  const [appointments, setAppointments] = useState<DoctorAppointmentDto[]>([]);
+  const [consultations, setConsultations] = useState<ConsultationDto[]>([]);
+  const [pagination, setPagination] = useState<ConsultationsResponse['pagination'] | null>(null);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadAppointments = useCallback(async () => {
+  const loadConsultations = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await api.get<DoctorAppointmentsResponse>('/appointments', {
-        params: { page: 1, limit: 20 },
+      const res = await api.get<ConsultationsResponse>('/consultations', {
+        params: { page, limit: 10 },
       });
-      setAppointments(res.data.data.filter((appointment) => appointment.status === 'scheduled'));
+      setConsultations(res.data.data);
+      setPagination(res.data.pagination);
     } catch (error) {
       handleClientError(error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      void loadAppointments();
+      void loadConsultations();
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [loadAppointments]);
+  }, [loadConsultations]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-          Consultations Workspace
-        </h1>
-        <p className="text-muted-foreground mt-0.5">
-          Select a scheduled appointment to create a consultation.
-        </p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+            Consultations Workspace
+          </h1>
+          <p className="text-muted-foreground mt-0.5">
+            Review completed consultations, prescriptions, and lab requests.
+          </p>
+        </div>
+        <Button asChild variant="outline" className="rounded-lg">
+          <Link href="/doctor/appointments">
+            <CalendarDays className="size-4" />
+            Start From Appointment
+          </Link>
+        </Button>
       </div>
 
       <Card className="border-border bg-card overflow-hidden">
         <CardHeader className="border-b border-border bg-slate-50/50 dark:bg-zinc-900/50">
-          <CardTitle className="text-lg">Ready For Consultation</CardTitle>
-          <CardDescription>Scheduled appointments that can be converted into clinical notes.</CardDescription>
+          <CardTitle className="text-lg">Consultation Records</CardTitle>
+          <CardDescription>Clinical records created from your appointments.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          {isLoading ? (
+          {isLoading && consultations.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-16 text-center text-muted-foreground gap-2">
               <Loader2 className="size-8 animate-spin text-primary" />
-              <p className="text-sm font-medium">Fetching scheduled appointments...</p>
+              <p className="text-sm font-medium">Fetching consultations...</p>
             </div>
-          ) : appointments.length === 0 ? (
+          ) : consultations.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-16 text-center text-muted-foreground">
               <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 mb-4">
-                <CheckCircle2 className="size-6" />
+                <FileText className="size-6" />
               </div>
-              <h3 className="font-bold text-foreground text-base">No Scheduled Consultations</h3>
+              <h3 className="font-bold text-foreground text-base">No Consultations Found</h3>
               <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                Your scheduled appointment queue is currently empty.
+                Completed consultation records will appear here.
               </p>
-              <Button asChild variant="outline" className="mt-5 rounded-lg">
-                <Link href="/doctor/appointments">
-                  <CalendarDays className="size-4" />
-                  View Appointments
-                </Link>
-              </Button>
             </div>
           ) : (
-            <div className="divide-y divide-border">
-              {appointments.map((appointment) => {
-                const visitTime = new Date(appointment.datetime).toLocaleString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                });
-
-                return (
-                  <div key={appointment.id} className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between hover:bg-muted/10 transition-colors">
-                    <div className="flex items-start gap-4">
-                      <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/10">
-                        <Stethoscope className="size-5" />
-                      </div>
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-bold text-foreground">{appointment.patientName}</p>
-                          <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 hover:bg-amber-500/15 text-xs font-normal">
-                            Scheduled
+            <div className="overflow-hidden">
+              <Table>
+                <TableHeader className="bg-muted/30">
+                  <TableRow className="border-b border-border">
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground pl-6">Patient</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Completed</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Diagnosis</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Orders</TableHead>
+                    <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-right pr-6">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {consultations.map((consultation) => (
+                    <TableRow key={consultation.id} className="border-b border-border hover:bg-muted/10 transition-colors">
+                      <TableCell className="py-4.5 pl-6">
+                        <p className="font-bold text-foreground">{consultation.patientName}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{consultation.patientPhoneNumber}</p>
+                      </TableCell>
+                      <TableCell className="py-4.5 font-semibold text-foreground">
+                        {new Date(consultation.completedAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </TableCell>
+                      <TableCell className="py-4.5 max-w-xs truncate">
+                        {consultation.diagnosis || 'No diagnosis recorded'}
+                      </TableCell>
+                      <TableCell className="py-4.5">
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline" className="gap-1">
+                            <Pill className="size-3" />
+                            {consultation.prescriptions.reduce((total, prescription) => total + prescription.prescribedItems.length, 0)}
+                          </Badge>
+                          <Badge variant="outline" className="gap-1">
+                            <FlaskConical className="size-3" />
+                            {consultation.labRequests.length}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{visitTime}</p>
-                        <p className="text-sm text-foreground mt-1">{appointment.reason}</p>
-                      </div>
-                    </div>
-                    <Button asChild className="rounded-lg">
-                      <Link href={`/doctor/consultations/${appointment.id}`}>
-                        <ClipboardPlus className="size-4" />
-                        Create Consultation
-                      </Link>
+                      </TableCell>
+                      <TableCell className="py-4.5 text-right pr-6">
+                        <Button asChild>
+                          <Link href={`/doctor/consultations/${consultation.id}/details`}>
+                            <Eye className="size-3.5" />
+                            Details
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {pagination && (
+                <div className="flex items-center justify-between border-t border-border px-6 py-4">
+                  <span className="text-xs text-muted-foreground font-medium">
+                    Page {pagination.page} of {pagination.totalPages}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg"
+                      disabled={!pagination.hasPreviousPage || isLoading}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Prev
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg"
+                      disabled={!pagination.hasNextPage || isLoading}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Next
                     </Button>
                   </div>
-                );
-              })}
+                </div>
+              )}
             </div>
           )}
         </CardContent>

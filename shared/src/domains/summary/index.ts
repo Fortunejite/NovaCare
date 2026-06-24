@@ -1,6 +1,10 @@
 export interface DoctorSummaryDto {
   todayCompletedAppointments: number;
   todayScheduledAppointments: number;
+  todayPendingAppointments: number;
+  totalConsultations: number;
+  pendingLabRequests: number;
+  pendingPrescriptions: number;
 }
 
 export interface PharmacistSummaryDto {
