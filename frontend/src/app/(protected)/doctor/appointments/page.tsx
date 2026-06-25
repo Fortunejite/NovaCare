@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Clock,
   ClipboardPlus,
+  Hourglass,
   Loader2,
   Search,
   XCircle,
@@ -69,6 +70,13 @@ export default function DoctorAppointmentsPage() {
             Scheduled
           </Badge>
         );
+      case 'progress':
+        return (
+          <Badge className="bg-sky-500/10 text-sky-600 border border-sky-500/20 hover:bg-sky-500/15 gap-1 text-xs font-normal">
+            <Hourglass className="size-3" />
+            In Progress
+          </Badge>
+        );
       case 'completed':
         return (
           <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/15 gap-1 text-xs font-normal">
@@ -103,7 +111,7 @@ export default function DoctorAppointmentsPage() {
         <CardHeader className="border-b border-border py-5 px-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex bg-muted/50 p-1 rounded-xl border border-border self-start">
-              {(['all', 'scheduled', 'completed', 'cancelled'] as const).map((item) => (
+              {(['all', 'scheduled', 'progress', 'completed', 'cancelled'] as const).map((item) => (
                 <button
                   key={item}
                   onClick={() => {
@@ -195,6 +203,12 @@ export default function DoctorAppointmentsPage() {
                               <Link href={`/doctor/appointments/${appointment.id}`}>
                                 <ClipboardPlus className="size-3.5" />
                                 Start Consultation
+                              </Link>
+                            </Button>
+                          ) : appointment.status === 'progress' && appointment.consultationId ? (
+                            <Button asChild>
+                              <Link href={`/doctor/consultations/${appointment.consultationId}/edit`}>
+                                Continue Consultation
                               </Link>
                             </Button>
                           ) : appointment.consultationId ? (

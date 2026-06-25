@@ -36,6 +36,7 @@ export const doctorConsultationMapper = (payload: DoctorAppointment): Consultati
 
     appointmentId: payload.appointment.id,
     appointmentDate: payload.appointment.datetime,
+    appointmentStatus: payload.appointment.status,
     patientName,
     patientPhoneNumber: patientInfo.phoneNumber,
     prescriptions: payload.prescriptions.map((prescription) => ({

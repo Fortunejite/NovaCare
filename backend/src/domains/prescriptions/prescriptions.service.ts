@@ -11,6 +11,9 @@ import {
   dispensePrescriptionSchema,
   CreatePrescriptionSchemaDto,
   createPrescriptionSchema,
+  CreatePrescriptionOrderSchemaDto,
+  createPrescriptionOrderSchema,
+  PrescriptionDto,
 } from '@app/shared';
 import PrescriptionsMapper, {
   PharmacistDetailsInclude,
@@ -20,6 +23,58 @@ import PrescriptionsMapper, {
 import { Prisma } from '@prisma/client';
 
 class PrescriptionsService {
+  static async createPrescription(
+    payload: CreatePrescriptionOrderSchemaDto,
+    userId: string,
+  ): Promise<PrescriptionDto> {
+    const data = createPrescriptionOrderSchema.parse(payload);
+    const doctor = await prisma.doctor.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!doctor) {
+      throw new NotFoundError('Doctor not found');
+    }
+
+    const consultation = await prisma.consultation.findUnique({
+      where: { id: data.consultationId },
+      include: { appointment: { select: { doctorId: true, status: true } } },
+    });
+
+    if (!consultation || consultation.appointment.doctorId !== doctor.id) {
+      throw new NotFoundError('Consultation not found');
+    }
+
+    if (consultation.appointment.status !== 'progress') {
+      throw new BadRequestError(
+        'Prescriptions can only be created for consultations in progress',
+      );
+    }
+
+    const prescription = await prisma.prescription.create({
+      data: {
+        consultationId: data.consultationId,
+        prescribedItems: {
+          create: data.prescriptions,
+        },
+      },
+      include: { prescribedItems: { include: PrescribedItemsInclude } },
+    });
+
+    return {
+      id: prescription.id,
+      consultationId: prescription.consultationId,
+      pharmacistId: prescription.pharmacistId,
+      status: prescription.status,
+      createdAt: prescription.createdAt,
+      updatedAt: prescription.updatedAt,
+      prescribedItems: prescription.prescribedItems.map((item) =>
+        PrescriptionsMapper.toPrescribedItemDto(item),
+      ),
+    };
+  }
+
   static async addPrescriptionItem(
     prescriptionId: string,
     payload: CreatePrescriptionSchemaDto,

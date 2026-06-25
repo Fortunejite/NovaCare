@@ -30,11 +30,17 @@ class LabRequestsService {
 
     const consultation = await prisma.consultation.findUnique({
       where: { id: data.consultationId },
-      include: { appointment: { select: { doctorId: true } } },
+      include: { appointment: { select: { doctorId: true, status: true } } },
     });
 
     if (!consultation || consultation.appointment.doctorId !== doctor.id) {
       throw new NotFoundError('Consultation not found');
+    }
+
+    if (consultation.appointment.status !== 'progress') {
+      throw new BadRequestError(
+        'Lab requests can only be created for consultations in progress',
+      );
     }
 
     const labRequest = await prisma.labRequest.create({

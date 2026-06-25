@@ -114,11 +114,6 @@ export default function DoctorConsultationFormPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!diagnosis.trim() && !notes.trim()) {
-      toast.error('Add a diagnosis or consultation note before saving.');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
       const consultationResponse = await api.post<ConsultationDto>('/consultations', {

@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import Link from 'next/link';
 import api, { handleClientError } from '@/lib/api';
-import { ConsultationDto, labTests, LabTestType } from '@app/shared';
+import { ConsultationDto } from '@app/shared';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,6 @@ import {
   FlaskConical,
   Loader2,
   Pill,
-  Plus,
   UserRound,
 } from 'lucide-react';
 
@@ -34,8 +33,6 @@ export default function ConsultationDetailsPage() {
   const router = useRouter();
   const [consultation, setConsultation] = useState<ConsultationDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedLabTest, setSelectedLabTest] = useState<LabTestType>('blood_test');
-  const [isRequestingLab, setIsRequestingLab] = useState(false);
 
   const loadConsultation = useCallback(async () => {
     try {
@@ -56,24 +53,6 @@ export default function ConsultationDetailsPage() {
 
     return () => window.clearTimeout(timer);
   }, [loadConsultation]);
-
-  const requestLabTest = async () => {
-    if (!consultation) return;
-
-    try {
-      setIsRequestingLab(true);
-      await api.post('/lab-requests', {
-        consultationId: consultation.id,
-        testType: selectedLabTest,
-      });
-      toast.success('Lab request added');
-      await loadConsultation();
-    } catch (error) {
-      handleClientError(error);
-    } finally {
-      setIsRequestingLab(false);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -113,10 +92,19 @@ export default function ConsultationDetailsPage() {
             Completed on {new Date(consultation.completedAt).toLocaleString()}
           </p>
         </div>
-        <Button variant="outline" onClick={() => router.back()} className="rounded-lg">
-          <ArrowLeft className="size-4" />
-          Back
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {consultation.appointmentStatus === 'progress' && (
+            <Button asChild className="rounded-lg">
+              <Link href={`/doctor/consultations/${consultation.id}/edit`}>
+                Edit Consultation
+              </Link>
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => router.back()} className="rounded-lg">
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[0.9fr_1.4fr]">
@@ -135,6 +123,13 @@ export default function ConsultationDetailsPage() {
                 <p className="font-bold text-foreground truncate">{consultation.patientName}</p>
                 <p className="text-xs text-muted-foreground">{consultation.patientPhoneNumber}</p>
               </div>
+            </div>
+
+            <div className="rounded-2xl border border-border p-4">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Appointment Status</p>
+              <Badge variant="outline" className="mt-2 capitalize">
+                {consultation.appointmentStatus === 'progress' ? 'in progress' : consultation.appointmentStatus}
+              </Badge>
             </div>
 
             <div className="rounded-2xl border border-border p-4">
@@ -199,28 +194,6 @@ export default function ConsultationDetailsPage() {
                 <div>
                   <CardTitle className="text-lg">Lab Requests</CardTitle>
                   <CardDescription>Requested tests, assigned technician, and result state.</CardDescription>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <select
-                    value={selectedLabTest}
-                    onChange={(event) => setSelectedLabTest(event.target.value as LabTestType)}
-                    className="h-10 rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                  >
-                    {labTests.map((test) => (
-                      <option key={test} value={test}>
-                        {formatLabTest(test)}
-                      </option>
-                    ))}
-                  </select>
-                  <Button
-                    type="button"
-                    onClick={requestLabTest}
-                    disabled={isRequestingLab}
-                    className="rounded-lg"
-                  >
-                    {isRequestingLab ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-                    Request Test
-                  </Button>
                 </div>
               </div>
             </CardHeader>

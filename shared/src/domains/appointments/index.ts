@@ -11,7 +11,7 @@ export interface ReceptionistAppointmentDto {
   receptionistId: string;
   datetime: Date;
   reason: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'progress';
   createdAt: Date;
 }
 
@@ -24,7 +24,7 @@ export interface DoctorAppointmentDto {
   receptionistId: string;
   datetime: Date;
   reason: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'progress';
   consultationId: string | null;
   createdAt: Date;
 }

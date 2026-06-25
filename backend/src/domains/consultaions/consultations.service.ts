@@ -5,11 +5,14 @@ import {
   CreateConsultationSchemaDto,
   ConsultationsResponse,
   pageResponseMapper,
+  updateConsultationSchema,
+  UpdateConsultationSchemaDto,
 } from '@app/shared';
 import {
   DoctorConsultationInclude,
   doctorConsultationMapper,
 } from './consultaions.mapper';
+import { isPastDate } from '@/lib/datetime';
 
 class ConsultaionService {
   private static async getDoctorProfileId(userId: string) {
@@ -40,11 +43,20 @@ class ConsultaionService {
       throw new BadRequestError('Only scheduled appointments can be used to create consultations');
     }
 
+    const now = new Date();
+    if (isPastDate(appointment.datetime)) {
+      await prisma.appointment.update({
+        where: { id: appointment.id },
+        data: { status: 'cancelled' },
+      });
+      throw new BadRequestError('Appointment date or time has passed. The appointment has been cancelled. Please reschedule the appointment to create a consultation');
+    }
+
     let consultationId = '';
     await prisma.$transaction(async (tx) => {
       await tx.appointment.update({
         where: { id: appointment.id },
-        data: { status: 'completed' },
+        data: { status: 'progress' },
       });
 
       const consultaton = await tx.consultation.create({ data });
@@ -114,6 +126,63 @@ class ConsultaionService {
     }
 
     return doctorConsultationMapper(consultation);
+  }
+
+  static async updateConsultation(
+    userId: string,
+    consultationId: string,
+    payload: UpdateConsultationSchemaDto,
+  ) {
+    const doctorId = await this.getDoctorProfileId(userId);
+    const data = updateConsultationSchema.parse(payload);
+    const consultation = await prisma.consultation.findUnique({
+      where: { id: consultationId },
+      include: { appointment: { select: { doctorId: true, status: true } } },
+    });
+
+    if (!consultation || consultation.appointment.doctorId !== doctorId) {
+      throw new BadRequestError('Consultation not found');
+    }
+
+    if (consultation.appointment.status !== 'progress') {
+      throw new BadRequestError('Only consultations in progress can be edited');
+    }
+
+    const updated = await prisma.consultation.update({
+      where: { id: consultationId },
+      data,
+      include: DoctorConsultationInclude,
+    });
+
+    return doctorConsultationMapper(updated);
+  }
+
+  static async markConsultationAsCompleted(userId: string, consultationId: string) {
+    const doctorId = await this.getDoctorProfileId(userId);
+    const consultation = await prisma.consultation.findUnique({
+      where: { id: consultationId },
+      include: { appointment: { select: { doctorId: true, status: true } } },
+    });
+
+    if (!consultation || consultation.appointment.doctorId !== doctorId) {
+      throw new BadRequestError('Consultation not found');
+    }
+
+    if (consultation.appointment.status !== 'progress') {
+      throw new BadRequestError('Only consultations in progress can be marked as completed');
+    }
+
+    await prisma.appointment.update({
+      where: { id: consultation.appointmentId },
+      data: { status: 'completed' },
+    });
+
+    const updated = await prisma.consultation.findUnique({
+      where: { id: consultationId },
+      include: DoctorConsultationInclude,
+    });
+
+    return doctorConsultationMapper(updated!);
   }
 }
 

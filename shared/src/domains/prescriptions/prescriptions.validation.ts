@@ -9,6 +9,13 @@ export const createPrescriptionSchema = z.object({
 
 export type CreatePrescriptionSchemaDto = z.infer<typeof createPrescriptionSchema>;
 
+export const createPrescriptionOrderSchema = z.object({
+  consultationId: z.string().min(1, "Consultation ID is required"),
+  prescriptions: z.array(createPrescriptionSchema).min(1, "At least one prescription item is required"),
+})
+
+export type CreatePrescriptionOrderSchemaDto = z.infer<typeof createPrescriptionOrderSchema>;
+
 export const updatePrescriptionSchema = z.object({
   medicationId: z.string().min(1, "Medicine ID is required").optional(),
   dosage: z.string("Dosage is reqired").optional(),

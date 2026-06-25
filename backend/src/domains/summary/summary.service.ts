@@ -41,7 +41,7 @@ class SummaryService {
       prisma.appointment.count({
         where: {
           doctorId: doctor.id,
-          status: "scheduled",
+          status: { in: ["scheduled", "progress"] },
           datetime: { gte: todayStart, lt: todayEnd },
         },
       }),

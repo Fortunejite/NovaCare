@@ -28,11 +28,34 @@ class ConsultaionsController {
     }
   }
 
+  static async updateConsultaion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const consultation = await ConsultaionService.updateConsultation(
+        req.user.id,
+        req.params.id as string,
+        req.body,
+      );
+      res.status(200).json(consultation);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async createConsultaion(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.user;
       const consultation = await ConsultaionService.createConsultaion(user.id, req.body);
       res.status(201).json(consultation);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async markConsultationAsCompleted(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.user;
+      const consultation = await ConsultaionService.markConsultationAsCompleted(user.id, req.params.id as string);
+      res.status(200).json(consultation);
     } catch (error) {
       next(error);
     }

@@ -5,6 +5,7 @@ import PrescriptionsController from './prescriptions.controller';
 const routes = Router();
 
 routes.get('/', Authorize(['pharmacist']), PrescriptionsController.getAllPrescriptions);
+routes.post('/', Authorize(['doctor']), PrescriptionsController.createPrescription);
 routes.get('/:id', Authorize(['doctor', 'pharmacist']), PrescriptionsController.getPrescriptionById);
 routes.post('/:id/items', Authorize(['doctor']), PrescriptionsController.addPrescriptionItem);
 routes.put('/:id/items/:itemId', Authorize(['doctor']), PrescriptionsController.updatePrescriptionItem);

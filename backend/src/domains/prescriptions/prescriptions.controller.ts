@@ -2,6 +2,22 @@ import { Request, Response, NextFunction } from 'express';
 import PrescriptionsService from './prescriptions.service';
 
 class PrescriptionsController {
+  static async createPrescription(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const prescription = await PrescriptionsService.createPrescription(
+        req.body,
+        req.user.id,
+      );
+      res.status(201).json(prescription);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async getPrescriptionById(
     req: Request,
     res: Response,

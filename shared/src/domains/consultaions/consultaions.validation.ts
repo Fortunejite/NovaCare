@@ -9,3 +9,10 @@ export const createConsultationSchema = z.object({
 })
 
 export type CreateConsultationSchemaDto = z.infer<typeof createConsultationSchema>;
+
+export const updateConsultationSchema = z.object({
+  diagnosis: z.string().optional(),
+  notes: z.string().optional(),
+})
+
+export type UpdateConsultationSchemaDto = z.infer<typeof updateConsultationSchema>;

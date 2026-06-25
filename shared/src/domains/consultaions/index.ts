@@ -1,5 +1,6 @@
 import { PrescriptionDto } from '../prescriptions';
 import { LabRequestStatus, LabTestType, PagedResponse } from '../../shared';
+import { DoctorAppointmentDto } from '../appointments';
 
 export * from './consultaions.validation';
 
@@ -23,6 +24,7 @@ export interface ConsultationDto {
   patientName: string;
   patientPhoneNumber: string;
   appointmentDate: Date;
+  appointmentStatus: DoctorAppointmentDto['status'];
   prescriptions: PrescriptionDto[];
   labRequests: ConsultationLabRequestDto[];
 }

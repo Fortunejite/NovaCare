@@ -41,6 +41,7 @@ import {
   Check,
   ArrowLeft,
   CalendarPlus,
+  ReceiptText,
 } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -231,6 +232,21 @@ export default function AppointmentsPage() {
     }
   };
 
+  const generateReceipt = async (appointmentId: string) => {
+    try {
+      const response = await api.post(
+        '/bills/generate-receipt',
+        { appointmentId },
+        { responseType: 'blob' },
+      );
+      const url = window.URL.createObjectURL(response.data);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 30000);
+    } catch (error) {
+      handleClientError(error);
+    }
+  };
+
   // Clear filters
   const resetFilters = () => {
     setSelectedPatientId('');
@@ -252,6 +268,12 @@ export default function AppointmentsPage() {
         return (
           <Badge className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/15">
             Completed
+          </Badge>
+        );
+      case 'progress':
+        return (
+          <Badge className="bg-amber-500/10 text-amber-600 border border-amber-500/20 hover:bg-amber-500/15">
+            In Progress
           </Badge>
         );
       case 'cancelled':
@@ -624,8 +646,34 @@ export default function AppointmentsPage() {
                           <TableCell className="py-4">{getStatusBadge(appt.status)}</TableCell>
                           
                           <TableCell className="py-4 pr-6 text-right">
-                            {appt.status === 'scheduled' && !isRescheduling && (
-                              <div className="flex items-center justify-end gap-2">
+                            <div className="flex items-center justify-end gap-2">
+                              {activeTab === 'doctor' && (
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="icon"
+                                  className="rounded-xl size-8"
+                                  title="Book appointment for this patient"
+                                >
+                                  <Link href={`/receptionist/appointments/new?patientId=${appt.patientId}`}>
+                                    <CalendarPlus className="size-3.5" />
+                                  </Link>
+                                </Button>
+                              )}
+                              {(appt.status === 'progress' || appt.status === 'completed') && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => generateReceipt(appt.id)}
+                                  className="rounded-xl size-8"
+                                  title="Generate receipt"
+                                >
+                                  <ReceiptText className="size-3.5" />
+                                </Button>
+                              )}
+                              {appt.status === 'scheduled' && !isRescheduling && (
+                                <>
                                 <Button
                                   type="button"
                                   variant="outline"
@@ -645,8 +693,9 @@ export default function AppointmentsPage() {
                                 >
                                   <Trash2 className="size-3.5" />
                                 </Button>
-                              </div>
-                            )}
+                                </>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -753,6 +802,28 @@ export default function AppointmentsPage() {
                           </Button>
                         </div>
                       )}
+                      <div className="grid grid-cols-2 gap-2 pt-1.5">
+                        {activeTab === 'doctor' && (
+                          <Button asChild variant="outline" size="sm" className="rounded-xl h-9 text-xs">
+                            <Link href={`/receptionist/appointments/new?patientId=${appt.patientId}`}>
+                              <CalendarPlus className="size-3 mr-1" />
+                              New Visit
+                            </Link>
+                          </Button>
+                        )}
+                        {(appt.status === 'progress' || appt.status === 'completed') && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generateReceipt(appt.id)}
+                            className="rounded-xl h-9 text-xs"
+                          >
+                            <ReceiptText className="size-3 mr-1" />
+                            Receipt
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

@@ -34,6 +34,7 @@ enum PatientStatus {
 
 enum AppointmentStatus {
   scheduled
+  progress
   completed
   cancelled
 }
@@ -69,6 +70,18 @@ enum LabTestType {
   genetic_test
   allergy_test
   pathology_test
+}
+
+enum Services {
+  consultation
+  lab_test
+  prescription
+}
+
+enum BillStatus {
+  unpaid
+  paid
+  partially_paid
 }
 
 model AuthMethod {
@@ -259,6 +272,7 @@ model Appointment {
   doctor       Doctor        @relation(fields: [doctorId], references: [id])
   receptionist Receptionist  @relation(fields: [receptionistId], references: [id])
   consultation Consultation?
+  bill         Bill?
 
   @@map("appointments")
 }
@@ -315,7 +329,7 @@ model PrescribedItem {
   dosage         String
   frequency      String
   duration       String
-  quantity       Int?
+  quantity       Int      @default(1)
   prescriptionId String
   createdAt      DateTime @default(now())
 
@@ -354,17 +368,35 @@ model LabResult {
 }
 
 model Bill {
-  id        String   @id @default(uuid())
-  patientId String
+  id            String     @id @default(uuid())
+  patientId     String
+  status        BillStatus @default(unpaid)
+  appointmentId String     @unique
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  patient        Patient         @relation(fields: [patientId], references: [id])
+  appointment    Appointment?    @relation(fields: [appointmentId], references: [id])
+  paymentRecords PaymentRecord[]
+  billItems      BillItem[]
+
+  @@map("bills")
+}
+
+model BillItem {
+  id          String   @id @default(uuid())
+  billId      String
+  service     Services
+  serviceId   String   @unique
+  description String
+
   amount    Float
-  status    String   @default("unpaid")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  patient        Patient         @relation(fields: [patientId], references: [id])
-  paymentRecords PaymentRecord[]
+  bill Bill @relation(fields: [billId], references: [id])
 
-  @@map("bills")
+  @@map("bill_items")
 }
 
 model PaymentRecord {

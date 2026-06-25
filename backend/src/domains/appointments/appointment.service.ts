@@ -15,6 +15,7 @@ import {
 } from './appointment.mapper';
 import { BadRequestError, NotFoundError } from '@/lib/errors';
 import { Prisma, Role } from '@prisma/client';
+import { isPastDateTime } from '@/lib/datetime';
 
 class AppointmentService {
   static async createAppointment(
@@ -22,6 +23,20 @@ class AppointmentService {
     userId: string,
   ): Promise<ReceptionistAppointmentDto> {
     const appointment = createAppointmentSchema.parse(payload);
+    const now = new Date();
+    if (isPastDateTime(appointment.datetime)) {
+      throw new BadRequestError('Appointment date or time cannot be in the past');
+    }
+    const isDoctorFree = await prisma.appointment.findFirst({
+      where: {
+        doctorId: appointment.doctorId,
+        datetime: appointment.datetime,
+      },
+    });
+
+    if (isDoctorFree) {
+      throw new BadRequestError('Doctor is not available at the selected time');
+    }
     const receptionist = await prisma.receptionist.findUnique({
       where: { userId },
     });
@@ -31,6 +46,13 @@ class AppointmentService {
     const newAppointment = await prisma.appointment.create({
       data,
       include: ReceptionistAppointmentInclude,
+    });
+
+    await prisma.bill.create({
+      data: {
+        patientId: appointment.patientId,
+        appointmentId: newAppointment.id,
+      },
     });
 
     return receptionistAppointmentMapper(newAppointment);
@@ -89,7 +111,12 @@ class AppointmentService {
     return doctor.id;
   }
 
-  static async fetchDoctorAppointments(userId: string, page = 1, limit = 10, date?: string) {
+  static async fetchDoctorAppointments(
+    userId: string,
+    page = 1,
+    limit = 10,
+    date?: string,
+  ) {
     const doctorId = await this.getDoctorProfileId(userId);
     const where: Prisma.AppointmentWhereInput = { doctorId };
 
@@ -133,7 +160,9 @@ class AppointmentService {
     switch (payload.role) {
       case Role.receptionist:
         if (!payload.patientId && !payload.doctorId) {
-          throw new BadRequestError('Patient ID or Doctor ID are required for receptionists');
+          throw new BadRequestError(
+            'Patient ID or Doctor ID are required for receptionists',
+          );
         }
 
         return this.fetchReceptionistAppointments(
