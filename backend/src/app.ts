@@ -20,6 +20,7 @@ import {
   staffRoutes,
   summaryRoutes,
   billsRoutes,
+  reportsRoutes,
 } from './domains';
 
 export const startApp = () => {
@@ -54,6 +55,7 @@ export const startApp = () => {
   app.use('/api/medicines', medicineRoutes);
   app.use('/api/prescriptions', prescriptionsRoutes);
   app.use('/api/bills', billsRoutes);
+  app.use('/api/reports', reportsRoutes);
 
   app.use('/status', (req, res) => {
     res.status(200).json({ running: true });

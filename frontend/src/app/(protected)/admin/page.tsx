@@ -2,7 +2,7 @@
 
 import api, { handleClientError } from '@/lib/api';
 import { StaffDto, StaffResponse, StaffSummaryResponse } from '@app/shared';
-import { Ban, Eye, Loader2, Microscope, Pill, Stethoscope, ClipboardList, Users, UserCheck, ArrowRight } from 'lucide-react';
+import { Ban, Eye, Loader2, Microscope, Pill, Stethoscope, ClipboardList, Users, UserCheck, ArrowRight, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -39,6 +39,7 @@ export default function AdminHomepage() {
   const [summary, setSummary] = useState<StaffSummaryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDisabling, setIsDisabling] = useState<string | null>(null);
+  const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
   const [page, setPage] = useState(1);
   const limit = 10;
 
@@ -111,6 +112,24 @@ export default function AdminHomepage() {
     router.push(url);
   };
 
+  const handleGenerateReceipt = async () => {
+    try {
+      setIsGeneratingReceipt(true);
+      const response = await api.get('/reports/overview', {
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 30_000);
+    } catch (error) {
+      handleClientError(error);
+    } finally {
+      setIsGeneratingReceipt(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -136,6 +155,48 @@ export default function AdminHomepage() {
         ))}
       </section>
 
+      <section className="grid gap-4 md:grid-cols-3">
+        <Card className="border-border bg-card">
+          <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Quick action</p>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">Manage departments</h2>
+              <p className="text-sm text-muted-foreground">Review departments, descriptions, and doctor coverage.</p>
+            </div>
+            <Button type="button" variant="outline" onClick={() => router.push('/admin/departments')}>
+              Open departments
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card">
+          <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Quick action</p>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">Create staff</h2>
+              <p className="text-sm text-muted-foreground">Add a new doctor, pharmacist, receptionist, or lab technician.</p>
+            </div>
+            <Button type="button" onClick={() => router.push('/admin/create-staff')}>
+              Create staff
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card">
+          <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Quick action</p>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">Generate receipt</h2>
+              <p className="text-sm text-muted-foreground">Open the admin overview report from the reporting API.</p>
+            </div>
+            <Button type="button" onClick={handleGenerateReceipt} disabled={isGeneratingReceipt}>
+              {isGeneratingReceipt ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
+              Generate receipt
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+
       <Card className="gap-0 py-0">
         <CardHeader className="border-b border-border py-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -143,17 +204,9 @@ export default function AdminHomepage() {
               <CardTitle className="text-lg">Staff directory</CardTitle>
               <p className="text-sm text-muted-foreground">Review staff records, open profiles, or disable accounts.</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="size-4" />
-                {staffResponse?.pagination.total ?? 0} staff members
-              </div>
-              <Button type="button" size="sm" variant="outline" onClick={() => router.push('/admin/departments')}>
-                Manage departments
-              </Button>
-              <Button type="button" size="sm" onClick={() => router.push('/admin/create-staff')}>
-                Create staff
-              </Button>
+            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="size-4" />
+              {staffResponse?.pagination.total ?? 0} staff members
             </div>
           </div>
         </CardHeader>

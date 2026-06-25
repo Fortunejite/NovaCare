@@ -13,3 +13,4 @@ export { default as summaryRoutes } from './summary/summary.routes';
 export { default as medicineRoutes } from './medicine/medicine.routes';
 export { default as prescriptionsRoutes } from './prescriptions/prescriptions.routes';
 export { default as billsRoutes } from './bills/bills.route';
+export { default as reportsRoutes } from './reports/reports.route';

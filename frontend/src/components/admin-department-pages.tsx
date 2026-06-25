@@ -42,7 +42,7 @@ export function DepartmentListPage() {
     setIsLoading(true);
 
     try {
-      const response = await api.get('/admin/departments');
+      const response = await api.get('/departments');
       setDepartments(response.data);
     } catch (error) {
       handleClientError(error);
@@ -190,7 +190,7 @@ export function DepartmentDetailsPage({ id }: { id: string }) {
         setIsLoading(true);
 
         try {
-          const response = await api.get(`/admin/departments/${id}`);
+          const response = await api.get(`/departments/${id}`);
           setDepartment(response.data);
         } catch (error) {
           handleClientError(error);
