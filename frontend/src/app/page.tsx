@@ -58,10 +58,6 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto flex min-h-[calc(84svh-80px)] w-full max-w-7xl items-center px-5 pb-14 pt-8 sm:px-8">
           <div className="max-w-3xl text-white">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/88 backdrop-blur">
-              <ShieldCheck className="size-4 text-cyan-200" />
-              Secure workspace for modern hospital teams
-            </div>
             <h1 className="max-w-4xl text-5xl font-extrabold leading-tight tracking-normal sm:text-6xl lg:text-7xl">
               NovaCare
             </h1>
