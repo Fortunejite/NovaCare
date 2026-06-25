@@ -21,6 +21,15 @@ checkConfiguration();
 
 const nextConfig: NextConfig = {
   /* config options here */
+  async rewrites() {
+    console.log("Rewriting API requests to backend...");
+    return [
+      {
+        source: "/api/:path*",
+        destination: process.env.NEXT_PUBLIC_BACKEND_API_URL + "/api/:path*", // Proxy to Backend API
+      },
+    ];
+  }
 };
 
 export default nextConfig;
