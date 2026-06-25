@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsc -b && tsc-alias",
+    "build": "tsc -b && tsc-alias && prisma migrate deploy",
     "lint": "tsc -p tsconfig.json --noEmit",
     "postinstall": "prisma generate",
     "dev": "ts-node-dev -r tsconfig-paths/register src/index.ts",
