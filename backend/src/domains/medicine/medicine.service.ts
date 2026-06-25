@@ -4,7 +4,7 @@ import {
   CreateMedicineSchemaDto,
   MedicineDto,
   MedicineResponseDto,
-} from '@app/shared/src/domains';
+} from '@app/shared';
 import { medicineMapper } from './medicine.mapper';
 import { pageResponseMapper } from '@app/shared';
 import { Prisma } from '@prisma/client';
