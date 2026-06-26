@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
                 autoComplete="new-password"
                 placeholder="At least 6 characters"
                 aria-invalid={Boolean(errors.newPassword)}
-                className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
+                className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground shadow-sm transition-colors placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
               />
               {errors.newPassword ? <p className="mt-1.5 text-sm text-destructive">{errors.newPassword}</p> : null}
             </div>
@@ -136,7 +136,7 @@ export default function ResetPasswordPage() {
                 autoComplete="new-password"
                 placeholder="Repeat the new password"
                 aria-invalid={Boolean(errors.confirmPassword)}
-                className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
+                className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground shadow-sm transition-colors placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
               />
               {errors.confirmPassword ? <p className="mt-1.5 text-sm text-destructive">{errors.confirmPassword}</p> : null}
             </div>

@@ -29,7 +29,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <section
-        className="relative isolate min-h-[84svh] overflow-hidden bg-cover bg-center"
+        className="relative isolate min-h-screen overflow-hidden bg-cover bg-center"
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=2400&q=85')",

@@ -123,7 +123,7 @@ export default function LoginPage() {
                   autoComplete="email"
                   placeholder="name@hospital.org"
                   aria-invalid={Boolean(errors.email)}
-                  className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
+                  className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
                 />
                 {errors.email ? <p className="mt-1.5 text-sm text-destructive">{errors.email}</p> : null}
               </div>
@@ -146,7 +146,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   placeholder="••••••••"
                   aria-invalid={Boolean(errors.password)}
-                  className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
+                  className="mt-2 flex h-11 w-full rounded-xl border border-input bg-background px-3 text-base text-foreground shadow-sm transition-colors placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20"
                 />
                 {errors.password ? <p className="mt-1.5 text-sm text-destructive">{errors.password}</p> : null}
               </div>
