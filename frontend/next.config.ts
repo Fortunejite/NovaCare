@@ -22,7 +22,6 @@ checkConfiguration();
 const nextConfig: NextConfig = {
   /* config options here */
   async rewrites() {
-    console.log("Rewriting API requests to backend...");
     return [
       {
         source: "/api/:path*",

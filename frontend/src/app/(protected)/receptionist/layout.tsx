@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ClipboardList } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { redirect } from 'next/navigation';
+import { getUserDashboardPath } from '@/lib/role';
 
 export default function RoleLayout({
   children,
@@ -17,7 +18,7 @@ export default function RoleLayout({
   }
 
   if (user.role !== 'receptionist') {
-    redirect('/');
+    redirect(getUserDashboardPath(user.role));
   }
   
   return (

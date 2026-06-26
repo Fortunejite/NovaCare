@@ -523,7 +523,7 @@ export function RoleFormPage({ role, mode, id }: { role: RoleKey; mode: 'new' | 
         toast.success(`${config.singular} created successfully`);
       }
 
-      router.push(endpoint);
+      router.push(`/admin/${rolePathMap[role]}`);
     } catch (error) {
       handleClientError(error, { setErrors });
     } finally {

@@ -44,6 +44,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+            {message ? <p className="rounded-xl border border-border bg-background text-foreground px-3 py-2 text-sm text-success">{message}</p> : null}
             <div>
               <label htmlFor="email" className="text-sm font-medium text-foreground">
                 Email address
@@ -72,8 +73,6 @@ export default function ForgotPasswordPage() {
               />
               {errors.email ? <p className="mt-1.5 text-sm text-destructive">{errors.email}</p> : null}
             </div>
-
-            {message ? <p className="rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{message}</p> : null}
 
             <Button type="submit" className="h-11 w-full rounded-xl" disabled={isSubmitting}>
               {isSubmitting ? (

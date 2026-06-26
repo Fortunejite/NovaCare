@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth.store';
 import { useLabTechnicianStore } from '@/store/lab-technician.store';
 import { cn } from '@/lib/utils';
+import { getUserDashboardPath } from '@/lib/role';
 
 export default function LabTechnicianLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -36,7 +37,7 @@ export default function LabTechnicianLayout({ children }: { children: React.Reac
   }
 
   if (user.role !== 'labTechnician') {
-    redirect('/');
+    redirect(getUserDashboardPath(user.role));
   }
 
   const navItems = [

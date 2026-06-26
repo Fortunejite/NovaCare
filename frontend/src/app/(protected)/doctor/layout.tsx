@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth.store';
 import { useDoctorStore } from '@/store/doctor.store';
 import { cn } from '@/lib/utils';
+import { getUserDashboardPath } from '@/lib/role';
 
 export default function DoctorLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -36,7 +37,7 @@ export default function DoctorLayout({ children }: { children: React.ReactNode }
   }
 
   if (user.role !== 'doctor') {
-    redirect('/');
+    redirect(getUserDashboardPath(user.role));
   }
 
   const navItems = [

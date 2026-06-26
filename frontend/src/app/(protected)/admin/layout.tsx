@@ -1,6 +1,7 @@
 'use client';
 
 import AdminNavbar from '@/components/admin-navbar';
+import { getUserDashboardPath } from '@/lib/role';
 import { useAuthStore } from '@/store/auth.store';
 import { redirect } from 'next/navigation';
 
@@ -16,7 +17,7 @@ export default function RoleLayout({
   }
 
   if (user.role !== 'admin') {
-    redirect('/');
+    redirect(getUserDashboardPath(user.role));
   }
   
   return (

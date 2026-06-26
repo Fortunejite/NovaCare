@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getUserDashboardPath } from '@/lib/role';
 
 export default function PharmacistLayout({
   children,
@@ -32,7 +33,7 @@ export default function PharmacistLayout({
   }
 
   if (user.role !== 'pharmacist') {
-    redirect('/');
+    redirect(getUserDashboardPath(user.role));
   }
 
   const navItems = [

@@ -7,9 +7,13 @@ import { LoginUserDto, UserDto } from "@app/shared";
 import api, { handleClientError } from "@/lib/api";
 import { useAuthStore } from "@/store/auth.store";
 import { getUserDashboardPath } from "@/lib/role";
+import { redirect, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
-  const { fetchUser } = useAuthStore();
+  const { fetchUser, status, user } = useAuthStore();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next');
+
   const [loginData, setLoginData] = useState<LoginUserDto>({
     email: "",
     password: "",
@@ -47,13 +51,17 @@ export default function LoginPage() {
       await fetchUser();
       const user = res.data;
 
-      window.location.href = getUserDashboardPath(user.role);
+      window.location.href = next ? decodeURIComponent(next) : getUserDashboardPath(user.role);
     } catch (error) {
       handleClientError(error, { setErrors })
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (status === 'authenticated') {
+    redirect(next ? decodeURIComponent(next) : getUserDashboardPath(user!.role));
+  }
 
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">

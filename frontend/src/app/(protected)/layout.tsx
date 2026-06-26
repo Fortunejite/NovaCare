@@ -2,7 +2,7 @@
 
 import LoadingPage from '@/components/loading-page';
 import { useAuthStore } from '@/store/auth.store';
-import { redirect } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 
 export default function AuthLayout({
   children,
@@ -10,11 +10,12 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const { status } = useAuthStore();
+  const pathname = usePathname();
 
   if (status === 'loading') {
     return <LoadingPage />;
   } else if (status === 'unauthenticated') {
-    redirect('/login');
+    redirect(`/login?next=${pathname}`);
   }
 
   return <>{children}</>;

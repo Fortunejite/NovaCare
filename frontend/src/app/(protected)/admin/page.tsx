@@ -39,7 +39,7 @@ export default function AdminHomepage() {
   const [summary, setSummary] = useState<StaffSummaryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDisabling, setIsDisabling] = useState<string | null>(null);
-  const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [page, setPage] = useState(1);
   const limit = 10;
 
@@ -112,9 +112,9 @@ export default function AdminHomepage() {
     router.push(url);
   };
 
-  const handleGenerateReceipt = async () => {
+  const handleGenerateReport = async () => {
     try {
-      setIsGeneratingReceipt(true);
+      setIsGeneratingReport(true);
       const response = await api.get('/reports/overview', {
         responseType: 'blob',
       });
@@ -126,7 +126,7 @@ export default function AdminHomepage() {
     } catch (error) {
       handleClientError(error);
     } finally {
-      setIsGeneratingReceipt(false);
+      setIsGeneratingReport(false);
     }
   };
 
@@ -186,12 +186,12 @@ export default function AdminHomepage() {
           <CardContent className="flex h-full flex-col justify-between gap-4 p-5">
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">Quick action</p>
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">Generate receipt</h2>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">Generate Report</h2>
               <p className="text-sm text-muted-foreground">Open the admin overview report from the reporting API.</p>
             </div>
-            <Button type="button" onClick={handleGenerateReceipt} disabled={isGeneratingReceipt}>
-              {isGeneratingReceipt ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
-              Generate receipt
+            <Button type="button" onClick={handleGenerateReport} disabled={isGeneratingReport}>
+              {isGeneratingReport ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
+              Generate Report
             </Button>
           </CardContent>
         </Card>

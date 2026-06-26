@@ -38,6 +38,7 @@ export default function RootLayout({
         inter.variable,
       )}
     >
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Provider>{children}</Provider>
       </body>
