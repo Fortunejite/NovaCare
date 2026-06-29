@@ -30,7 +30,7 @@ export default function RoleLayout({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex flex-col md:h-16 h-24 w-full max-w-7xl md:items-center py-4 md:px-4 sm:px-6 lg:px-8  md:flex-row gap-2">
           <Link href="/receptionist" className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-full border border-border bg-muted/40 text-primary">
               <ClipboardList className="size-5" />
@@ -40,7 +40,7 @@ export default function RoleLayout({
               <p className="text-xs text-muted-foreground">Patient intake and front desk</p>
             </div>
           </Link>
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-4 px-4">
             <div className='flex gap-2 items-center'>
               <UserCircle className='size-4' />
               <p className="text-sm font-medium text-foreground">{user.email}</p>
