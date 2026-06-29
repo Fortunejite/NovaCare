@@ -18,7 +18,6 @@ import {
   FlaskConical,
   Loader2,
   Pill,
-  Sparkles,
   Stethoscope,
 } from 'lucide-react';
 
@@ -65,7 +64,6 @@ export default function DoctorDashboard() {
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
             {getGreeting()}, Dr {doctor ? doctor.firstName : 'Doctor'}
-            <Sparkles className="size-6 text-yellow-500 animate-pulse" />
           </h1>
           <p className="text-muted-foreground mt-1">
             Here is your clinical schedule overview for today.

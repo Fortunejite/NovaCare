@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, LogOut, User, UserCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { getUserDashboardPath } from '@/lib/role';
 
 export default function RoleLayout({
@@ -11,7 +11,8 @@ export default function RoleLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
 
   if (!user) {
     return null;
@@ -20,6 +21,11 @@ export default function RoleLayout({
   if (user.role !== 'receptionist') {
     redirect(getUserDashboardPath(user.role));
   }
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
   
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -34,6 +40,13 @@ export default function RoleLayout({
               <p className="text-xs text-muted-foreground">Patient intake and front desk</p>
             </div>
           </Link>
+          <div className="ml-auto flex items-center gap-4">
+            <div className='flex gap-2 items-center'>
+              <UserCircle className='size-4' />
+              <p className="text-sm font-medium text-foreground">{user.email}</p>
+            </div>
+            <LogOut className='size-4 cursor-pointer' onClick={handleLogout} />
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

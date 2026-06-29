@@ -42,6 +42,7 @@ import {
   ArrowLeft,
   CalendarPlus,
   ReceiptText,
+  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ui/confirm-dialog';
@@ -560,8 +561,19 @@ export default function AppointmentsPage() {
           ) : (
             <div className="space-y-4">
               {/* Desktop Table Layout */}
-              <div className="hidden md:block overflow-hidden rounded-2xl border border-border bg-card">
-                <Table>
+              <Card className="hidden md:block overflow-hidden">
+                <CardHeader className="border-b border-border ">
+                  <div className="flex justify-between">
+                    <div>
+                      <CardTitle className="text-lg">{selectedDoctor ? `${selectedDoctor.firstName}'s` : `${selectedPatient.firstName}'s` } Appointments</CardTitle>
+                    </div>
+                    {activeTab === 'patient' && <Button type="button" size="sm" onClick={() => router.push(`/receptionist/appointments/new?patientId=${selectedPatientId}`)} className="rounded-xl h-9">
+                      <Plus className="size-4" />
+                      New Appointment
+                    </Button>}
+                  </div>
+                </CardHeader>
+                <Table className='overflow-x-scroll'>
                   <TableHeader className="bg-muted/30">
                     <TableRow className="border-b border-border">
                       <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">
@@ -702,10 +714,18 @@ export default function AppointmentsPage() {
                     })}
                   </TableBody>
                 </Table>
-              </div>
+              </Card>
 
               {/* Mobile List Card Layout */}
               <div className="grid gap-4 md:hidden">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => router.push(`/receptionist/appointments/new?${activeTab}Id=${activeTab === 'patient' ? selectedPatientId : selectedDoctorId}`)}
+                  className="w-full rounded-xl h-9"
+                >
+                  New Appointment
+                </Button>
                 {appointments.map((appt) => {
                   const displayUser =
                     activeTab === 'patient'

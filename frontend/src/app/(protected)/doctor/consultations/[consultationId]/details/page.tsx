@@ -217,7 +217,6 @@ export default function ConsultationDetailsPage() {
                             {request.status === 'completed' ? <CheckCircle2 className="size-3" /> : <Clock className="size-3" />}
                             {request.status}
                           </Badge>
-                          <Badge variant="outline">Technician: {request.labTechnicianId || 'Unassigned'}</Badge>
                         </div>
                       </div>
                       {request.labTechnicianName && (
