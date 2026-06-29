@@ -565,7 +565,7 @@ export default function AppointmentsPage() {
                 <CardHeader className="border-b border-border ">
                   <div className="flex justify-between">
                     <div>
-                      <CardTitle className="text-lg">{selectedDoctor ? `${selectedDoctor.firstName}'s` : `${selectedPatient.firstName}'s` } Appointments</CardTitle>
+                      <CardTitle className="text-lg">{selectedDoctor ? `${selectedDoctor.firstName}'s` : `${selectedPatient?.firstName}'s` } Appointments</CardTitle>
                     </div>
                     {activeTab === 'patient' && <Button type="button" size="sm" onClick={() => router.push(`/receptionist/appointments/new?patientId=${selectedPatientId}`)} className="rounded-xl h-9">
                       <Plus className="size-4" />
